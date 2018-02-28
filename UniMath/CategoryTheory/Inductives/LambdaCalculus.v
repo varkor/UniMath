@@ -41,7 +41,7 @@ Local Notation "'chain'" := (diagram nat_graph).
 
 Section lambdacalculus.
 
-Local Notation "'HSET2'":= [HSET, HSET, has_homsets_HSET].
+Local Notation "'HSET2'" := [HSET, HSET, has_homsets_HSET].
 
 Local Definition has_homsets_HSET2 : has_homsets HSET2.
 Proof.
