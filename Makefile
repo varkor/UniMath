@@ -20,6 +20,7 @@ PACKAGES += Topology
 PACKAGES += RealNumbers
 PACKAGES += Tactics
 PACKAGES += SubstitutionSystems
+PACKAGES += MetaSubstitutionSystems
 PACKAGES += Folds
 PACKAGES += HomologicalAlgebra
 PACKAGES += Induction
@@ -86,7 +87,7 @@ ENHANCEDDOCSOURCE = util/enhanced-doc
 LATEXDIR = latex
 COQDOCLATEXOPTIONS := -latex -utf8 --body-only
 
-DEFINERS := 
+DEFINERS :=
 DEFINERS := $(DEFINERS)Axiom\|
 DEFINERS := $(DEFINERS)Class\|
 DEFINERS := $(DEFINERS)CoFixpoint\|
@@ -115,7 +116,7 @@ DEFINERS := $(DEFINERS)Structure\|
 DEFINERS := $(DEFINERS)Theorem\|
 DEFINERS := $(DEFINERS)Universe
 
-MODIFIERS := 
+MODIFIERS :=
 MODIFIERS := $(MODIFIERS)Canonical\|
 MODIFIERS := $(MODIFIERS)Monomorphic\|
 MODIFIERS := $(MODIFIERS)Global\|
@@ -143,7 +144,7 @@ coqwc:; coqwc $(VFILES)
 lc:; wc -l $(VFILES)
 lcp:; for i in $(PACKAGES) ; do echo ; echo ==== $$i ==== ; for f in $(VFILES) ; do echo "$$f" ; done | grep "UniMath/$$i" | xargs wc -l ; done
 wc:; wc -w $(VFILES)
-admitted: 
+admitted:
 	grep --color=auto Admitted $(VFILES)
 axiom:
 	grep --color=auto "Axiom " $(VFILES)
@@ -225,7 +226,7 @@ endif
 git-describe:
 	git describe --dirty --long --always --abbrev=40
 	git submodule foreach git describe --dirty --long --always --abbrev=40 --tags
-doc: $(GLOBFILES) $(VFILES) 
+doc: $(GLOBFILES) $(VFILES)
 	mkdir -p $(ENHANCEDDOCTARGET)
 	cp $(ENHANCEDDOCSOURCE)/proofs-toggle.js $(ENHANCEDDOCTARGET)/proofs-toggle.js
 	$(SHOW)COQDOC
@@ -377,7 +378,7 @@ clean::; rm -f .check-travis.okay
 
 # here we ensure that every *.v file F in each package P is listed in the corresponding file UniMath/P/.package/files
 # except for those listed in $GRANDFATHER_UNLISTED (currently none)
-GRANDFATHER_UNLISTED = 
+GRANDFATHER_UNLISTED =
 enforce-listing-of-proof-files:
 	@ if declare -A islisted 2>/dev/null ;										\
 	  then for i in $(VFILES) $(GRANDFATHER_UNLISTED) ;								\

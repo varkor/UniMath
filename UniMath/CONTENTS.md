@@ -196,6 +196,7 @@ The packages and files are listed here in logical order: each file depends only 
    - [Elements.v](CategoryTheory/Elements.v)
    - [ElementsOp.v](CategoryTheory/ElementsOp.v)
    - [elems_slice_equiv.v](CategoryTheory/elems_slice_equiv.v)
+   - [Monoidal.v](CategoryTheory/Monoidal.v)
    - [Monads/Kleisli.v](CategoryTheory/Monads/Kleisli.v)
    - [Monads/KTriples.v](CategoryTheory/Monads/KTriples.v)
    - [Monads/KTriplesEquiv.v](CategoryTheory/Monads/KTriplesEquiv.v)
@@ -337,6 +338,10 @@ The packages and files are listed here in logical order: each file depends only 
    - [STLC.v](SubstitutionSystems/STLC.v)
    - [CCS.v](SubstitutionSystems/CCS.v)
    - [All.v](SubstitutionSystems/All.v)
+## Package MetaSubstitutionSystems
+   - [MetaSubstitutionSystem.v](MetaSubstitutionSystems/MetaSubstitutionSystem.v)
+   - [FSigmaMonoid.v](MetaSubstitutionSystems/FSigmaMonoid.v)
+   - [All.v](MetaSubstitutionSystems/All.v)
 ## Package [Folds](Folds/README.md)
    - [UnicodeNotations.v](Folds/UnicodeNotations.v)
    - [aux_lemmas.v](Folds/aux_lemmas.v)

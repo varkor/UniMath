@@ -112,6 +112,7 @@ Require Export UniMath.CategoryTheory.Presheaf.
 Require Export UniMath.CategoryTheory.Elements.
 Require Export UniMath.CategoryTheory.ElementsOp.
 Require Export UniMath.CategoryTheory.elems_slice_equiv.
+Require Export UniMath.CategoryTheory.Monoidal.
 Require Export UniMath.CategoryTheory.Monads.Kleisli.
 Require Export UniMath.CategoryTheory.Monads.KTriples.
 Require Export UniMath.CategoryTheory.Monads.KTriplesEquiv.

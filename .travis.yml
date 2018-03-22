@@ -15,6 +15,7 @@ env:
     - PACKAGES=Topology
     - PACKAGES=RealNumbers
     - PACKAGES=SubstitutionSystems
+    - PACKAGES=MetaSubstitutionSystems
     - PACKAGES=Tactics BUILD_COQIDE=yes BUILD_ALSO=TAGS
     - PACKAGES=Folds
     - PACKAGES=Induction

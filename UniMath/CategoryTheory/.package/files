@@ -111,6 +111,7 @@ Presheaf.v
 Elements.v
 ElementsOp.v
 elems_slice_equiv.v
+Monoidal.v
 Monads/Kleisli.v
 Monads/KTriples.v
 Monads/KTriplesEquiv.v
