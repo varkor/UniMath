@@ -19,9 +19,10 @@ Require Import UniMath.SubstitutionSystems.LiftingInitial_alt.
 
 Local Open Scope cat.
 
+Notation "'endofunctor' C" := (functor C C) (at level 60).
+
 Section metasubstitution.
 
-Local Notation "'endofunctor' C" := (functor C C) (at level 60).
 Local Definition endofunctor_precategory (C : precategory) := functor_precategory C C.
 
 (* The category (K, I, P) is a monoidal category. Here, we specifically set K = [HSET, HSET], I = Id_HSET and P = ∘. *)
@@ -34,7 +35,7 @@ Definition I := functor_identity C.
 Definition P := @functor_composite C.
 
 Local Definition hsC := has_homsets_HSET.
-Local Definition hsK : has_homsets K := functor_category_has_homsets C C hsC.
+Definition hsK : has_homsets K := functor_category_has_homsets C C hsC.
 
 (* Metasubstitution functors. *)
 Section msfunctor.
@@ -134,33 +135,35 @@ End bsfunctor.
 (* Binding metasubstitution functors. *)
 Section bmsfunctors.
 
-Context (X : endofunctor C) (HX : is_omega_cocont X).
+Context (FΣ : K ⟶ K) (X : endofunctor C) (HX : is_omega_cocont X).
 
 (* ΔFΣ(X) *)
-Definition const_FSX_functor := constant_functor K K (FS X).
+Definition const_FΣX_functor := constant_functor K K (FΣ X).
 
-Definition M := BinCoproduct_of_functors K K BinCoproductsK (FM X) const_FSX_functor.
+Definition MΣ := BinCoproduct_of_functors K K BinCoproductsK (FM X) const_FΣX_functor.
 
-Lemma is_omega_cocont_M : is_omega_cocont M.
+Lemma is_omega_cocont_MΣ : is_omega_cocont MΣ.
 Proof.
-    refine (is_omega_cocont_BinCoproduct_of_functors BinCoproductsK hsK (FM X) const_FSX_functor _ _).
+    refine (is_omega_cocont_BinCoproduct_of_functors BinCoproductsK hsK (FM X) const_FΣX_functor _ _).
     - exact (is_omega_cocont_FM X).
     - exact (is_omega_cocont_constant_functor hsK _).
 Defined.
 
-Lemma Mu : Initial (precategory_FunctorAlg M hsK).
+Lemma MuΣ : Initial (precategory_FunctorAlg MΣ hsK).
 Proof.
-    apply (colimAlgInitial _ InitialC2 is_omega_cocont_M).
+    apply (colimAlgInitial _ InitialC2 is_omega_cocont_MΣ).
     apply ColimsFunctorCategory_of_shape; apply ColimsC_of_shape.
 Defined.
 
 End bmsfunctors.
 
-(* M, parameterised on an endofunctor X. *)
-Check M.
+(* MΣ, parameterised on an endofunctor C ⟶ C, X. *)
+Check MΣ.
 
-(* The intial algebra associated with M. *)
-Check Mu.
+(* The intial algebra associated with MΣ. *)
+Check MuΣ.
+
+Check FS.
 
 End metasubstitution.
 

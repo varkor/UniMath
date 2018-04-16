@@ -21,17 +21,15 @@ Require Import UniMath.MetaSubstitutionSystems.MetaSubstitutionSystem.
 
 Local Open Scope cat.
 
-Section FΣMonoid_Definition.
-
-(* Curried definition of a tensor product. *)
-Definition tensor_product_ob {C : precategory} := C -> C -> C.
-Definition tensor_product_mor {C : precategory} (T : @tensor_product_ob C) := ∏ (V W X Y : C), (V --> W) -> (X --> Y) -> (T V X --> T W Y).
-
 Local Notation "C ²" := (binprod_precat C C) (at level 10).
 
 Definition tensor_product {C : precategory} := C² ⟶ C.
 
-Context {C : precategory} (FΣ : functor C C) (T : C² ⟶ C) (I : C).
+Section FΣMonoid_Definition.
+
+(* C here is actually what we've been calling K (i.e. C ⟶ C)) *)
+
+Context {C : precategory} (FΣ : endofunctor C) (T : C² ⟶ C) (I : C).
 
 Local Notation "X ⊗ Y" := (T (X , Y)) (at level 31).
 Local Notation "X ⊗# Y" := (#T (X #, Y)) (at level 31).
@@ -185,6 +183,62 @@ Qed.
 Definition precategory_FΣMonoid (hs : has_homsets C)
   : precategory := tpair _ _ (is_precategory_precategory_FΣMonoid_data hs).
 
+End FΣMonoid_Definition.
+
 Local Notation FΣMonoid := precategory_FΣMonoid.
 
-End FΣMonoid_Definition.
+Section MuΣ_as_FΣMonoid.
+
+(* In this section, C, K, I, P are from MetaSubstitutionSystem. *)
+
+Print P.
+
+(* In this section, MΣ := μA. I + X ⊗ A + FΣ(A) is an FΣ monoid *)
+
+Context (FΣ : endofunctor K) (X : endofunctor C).
+
+Check MuΣ FΣ X. (* C ⟶ C *)
+
+Definition composition_tensor_product : K² ⟶ K. (* Need to define this. *)
+Proof.
+  admit.
+Admitted.
+
+(* Definition MΣ := MΣ FΣ. *)
+Definition MΣ := MΣ FΣ.
+Definition MuΣ := MuΣ FΣ.
+
+Context (Z : C).
+
+Check (pr1 (pr1 (MuΣ X))).
+
+(* Specific FΣ monoid *)
+Definition sp_FΣMonoid := FΣMonoid FΣ composition_tensor_product I hsK.
+
+Local Notation "X ⊗ Y" := (composition_tensor_product (X , Y)) (at level 31).
+Local Notation "X ⊗# Y" := (#composition_tensor_product (X #, Y)) (at level 31).
+
+Check ob sp_FΣMonoid.
+
+(* Prove that MuΣ is actually an FΣ-monoid. *)
+Definition MuΣ_as_FΣMonoid : sp_FΣMonoid.
+Proof.
+  use tpair.
+  - exact (pr1 (pr1 (MuΣ X))). (* i.e. ∀X. MΣ(X) is a functor C ⟶ C *)
+  - split.
+    + admit. (* F-algebra morphism *)
+    + split.
+      * admit. (* Monoid multiplication *)
+      * (* Need to prove that I --> MΣ(X), by injection *)
+      (* Given an initial algebra, there is injection from any element of chain into limit *)
+      Check pr2 (pr2 (pr1 (MuΣ X))).
+      * admit. (* Monoid identity *)
+Admitted.
+  (* Construct this: ∑ X : C,
+    (FΣ X --> X) (* F-algebra morphism *)
+  × ((X ⊗ X --> X) (* Monoid multiplication *)
+  × (I --> X)). (* Monoid identity *) *)
+
+(* Prove that MuΣ is an initial FΣ-monoid. *)
+
+End MuΣ_as_FΣMonoid.
