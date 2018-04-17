@@ -49,7 +49,7 @@ Local Open Scope cat.
 Section functors.
 
 Definition functor_data (C C' : precategory_ob_mor) : UU :=
-  total2 ( fun F : ob C -> ob C' =>  ∏ a b : ob C, a --> b -> F a --> F b).
+  total2 ( fun F : ob C -> ob C' => ∏ a b : ob C, a --> b -> F a --> F b).
 
 Definition mk_functor_data {C C' : precategory_ob_mor} (F : ob C -> ob C')
            (H : ∏ a b : ob C, a --> b -> F a --> F b) : functor_data C C' := tpair _ F H.

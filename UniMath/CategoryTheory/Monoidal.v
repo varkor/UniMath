@@ -300,7 +300,7 @@ Contents:
  Definition right_unitor : UU := dom_right_unitor ⇔ Id.
 
  Definition triangle_eq (α : associator) (l : left_unitor) (r : right_unitor) :=
-   ∏ a b : C, (pr1 r a #⊗ (1 b)) =  pr1 α ((a , e) , b) ·  (1 a) #⊗ pr1 l b.
+   ∏ a b : C, (pr1 r a #⊗ (1 b)) =  pr1 α ((a , e) , b) · (1 a) #⊗ pr1 l b.
 
  Local Close Scope cat.
 
