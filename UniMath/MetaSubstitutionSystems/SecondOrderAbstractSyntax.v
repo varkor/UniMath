@@ -1,19 +1,18 @@
 Require Import UniMath.Foundations.PartD.
-Require Import UniMath.Foundations.Sets.
+(* Require Import UniMath.Foundations.Sets. *)
 Require Import UniMath.CategoryTheory.Categories.
-Require Import UniMath.CategoryTheory.categories.category_hset.
+(* Require Import UniMath.CategoryTheory.categories.category_hset. *)
 (* Require Import UniMath.CategoryTheory.categories.category_hset_structures. *)
-Require Import UniMath.CategoryTheory.functor_categories.
-Require Import UniMath.CategoryTheory.ProductCategory.
+(* Require Import UniMath.CategoryTheory.functor_categories. *)
+(* Require Import UniMath.CategoryTheory.ProductCategory. *)
 (* Require Import UniMath.CategoryTheory.PrecategoryBinProduct. *)
-(* Require Import UniMath.CategoryTheory.CocontFunctors. *)
+Require Import UniMath.CategoryTheory.CocontFunctors.
 (* Require Import UniMath.CategoryTheory.whiskering. *)
 Require Import UniMath.CategoryTheory.FunctorAlgebras.
-(* Require Import UniMath.CategoryTheory.limits.bincoproducts. *)
+Require Import UniMath.CategoryTheory.limits.bincoproducts.
 (* Require Import UniMath.CategoryTheory.limits.binproducts. *)
-(* Require Import UniMath.CategoryTheory.limits.graphs.colimits. *)
-(* Require Import UniMath.CategoryTheory.limits.initial. *)
-Require Import UniMath.CategoryTheory.Monoidal.
+Require Import UniMath.CategoryTheory.limits.graphs.colimits.
+Require Import UniMath.CategoryTheory.limits.initial.
 (* Require Import UniMath.SubstitutionSystems.Signatures. *)
 (* Require Import UniMath.SubstitutionSystems.BindingSigToMonad. *)
 (* Require Import UniMath.SubstitutionSystems.LamFromBindingSig. *)
@@ -42,8 +41,6 @@ Require Import UniMath.CategoryTheory.functor_categories.
 (* Useful notation. *)
 Notation "'endofunctor' C" := (functor C C) (at level 60).
 
-Section Category_Σ_s_Mon.
-
 (* Definition *)
 
 Context (Mon : monoidal_precat). (* A monoidal precategory (C, I, ⊗). *)
@@ -62,6 +59,8 @@ Let tensorial_strength : UU :=
 	∏ (Q : C × ∑ (X : C), I --> X), Σ (pr1 Q) ⊗ (pr1 (pr2 Q)) --> Σ ((pr1 Q) ⊗ (pr1 (pr2 Q))).
 
 Context (s : tensorial_strength).
+
+Section Category_Σ_s_Mon.
 
 Definition monoid_ob_data : UU :=
   ∑ X : C, (X ⊗ X --> X) × (I --> X).
@@ -293,3 +292,201 @@ Definition precategory_Σs_mon (hs : has_homsets C)
   : precategory := tpair _ _ (is_precategory_precategory_Σs_mon_data hs).
 
 End Category_Σ_s_Mon.
+
+Definition rewrite_codom {C : precategory} (X X' Y : C) (f : X --> Y) (eq : X = X') : X' --> Y.
+Proof.
+	rewrite <- eq.
+	assumption.
+Defined.
+
+Section Tensor_Preapplication_Functor.
+
+Check functor_data.
+
+Definition tensor_preapp_functor_data (X : Mon) : functor_data Mon Mon.
+Proof.
+	exists (λ Y, X ⊗ Y).
+	exact (λ _ _ f, identity X #⊗ f).
+Defined.
+
+Definition is_functor_tensor_preapp (X : Mon) : is_functor (tensor_preapp_functor_data X).
+Proof.
+	split.
+	- intro Y.
+		simpl.
+		rewrite <- id_on_binprod_precat_pair_of_el.
+		rewrite (functor_id (monoidal_precat_to_tensor Mon)).
+		reflexivity.
+	- intros ? ? ? ? ?.
+		simpl.
+		rewrite <- (functor_comp (monoidal_precat_to_tensor Mon)).
+		rewrite binprod_precat_comp.
+		rewrite id_right.
+		reflexivity.
+Qed.
+
+Definition tensor_preapp_functor (X : Mon) : functor _ _ :=
+	tpair _ _ (is_functor_tensor_preapp X).
+
+End Tensor_Preapplication_Functor.
+
+Context (bin_coproduct : BinCoproducts C).
+
+Definition dom {X Y : C} (f : X --> Y) := X.
+Definition codom {X Y : C} (f : X --> Y) := Y.
+
+Notation "X + Y" := (bin_coproduct X Y).
+Notation "f #+ g" := (BinCoproductOfArrows C (bin_coproduct (dom f) (dom g)) (bin_coproduct (codom f) (codom g)) f g) (at level 41).
+
+Section Distributive_Monoidal_Category.
+
+(* This should technically be an isomorphism (and a natural transformation on top of that), but it's unimportant for our purposes. *)
+Definition distributor_left : UU :=
+	∏ (X Y Z : C), X ⊗ (Y + Z) --> (X ⊗ Y + X ⊗ Z).
+
+Definition distributor_right : UU :=
+	∏ (X Y Z : C), (X + Y) ⊗ Z --> (X ⊗ Z + Y ⊗ Z).
+
+Definition distributive_monoidal_struct : UU.
+Proof.
+Admitted.
+
+Definition distributive_monoidal_precat : UU.
+Proof.
+Admitted.
+
+End Distributive_Monoidal_Category.
+
+Section Σ_I_X_Algebra.
+
+(* Assume our monoidal category (C, I, ⊗) has an initial object and binary coproducts. *)
+Context (X : C) (Z : Initial C).
+
+(* We're dealing with nonenriched categories here. *)
+Context (has_homsets_C : has_homsets C).
+
+(* Σ is also ω-cocontinuous by assumption. *)
+Context (is_ω_cocont_Σ : is_omega_cocont Σ).
+
+(* ΔI *)
+Definition ΔI_functor := constant_functor C C I.
+
+(* X ⊗ - *)
+Definition X_preapp_functor := tensor_preapp_functor X.
+
+(* Σ + ΔI + X ⊗ *)
+Definition Σ_I_X_functor := BinCoproduct_of_functors C C bin_coproduct (BinCoproduct_of_functors C C bin_coproduct Σ ΔI_functor) X_preapp_functor.
+
+Section Parameterised_Initial_Algebra.
+
+Check bin_coproduct.
+
+(* This definition is rough and not general enough, but hopefully suffices for what we want to prove here. *)
+
+(* P is a pointed parameter. *)
+Context (P : C) (δ_r : distributor_right).
+
+(* The point of the parameter *)
+Context (pt : I --> P).
+(* We probably shouldn't need this... *)
+Context (pt_inv : P --> I).
+
+Lemma convert_codom (A A' B : C) (f: A --> B) (eq : A = A') : A' --> B.
+Proof.
+  rewrite <- eq.
+  assumption.
+Defined.
+
+Lemma alt_map (MX : FunctorAlg Σ_I_X_functor has_homsets_C) (A : FunctorAlg Σ_I_X_functor has_homsets_C) (u : pr1 MX ⊗ P --> pr1 A) (f : Σ_I_X_functor (pr1 A) --> pr1 A) : codom (# Σ u #+ pt_inv) + codom (# (monoidal_precat_to_tensor Mon) (identity X #, u)) --> pr1 A.
+Proof.
+  unfold codom.
+  simpl in f.
+  repeat (unfold BinCoproduct_of_functors_ob in f; simpl in f).
+  unfold C.
+  assumption.
+Defined.
+
+Lemma alt_map2 (MX : FunctorAlg Σ_I_X_functor has_homsets_C) (A : FunctorAlg Σ_I_X_functor has_homsets_C) (u : pr1 MX ⊗ P --> pr1 A) (f : Σ_I_X_functor (pr1 MX) ⊗ P --> pr1 A) : (Σ (pr1 MX) + I + X ⊗ pr1 MX) ⊗ P --> pr1 A.
+Proof.
+  unfold codom.
+  simpl in f.
+  repeat (unfold BinCoproduct_of_functors_ob in f; simpl in f).
+  unfold C.
+  assumption.
+Defined.
+
+Definition is_parameterised_initial (MX : FunctorAlg Σ_I_X_functor has_homsets_C) : UU :=
+	∏ (A : FunctorAlg Σ_I_X_functor has_homsets_C),
+  ∑ (u : pr1 MX ⊗ P --> pr1 A),
+  (alt_map2 MX A u (pr2 MX #⊗ identity P · u)) = (δ_r (Σ (pr1 MX) + I) (X ⊗ pr1 MX) P) ·
+                             (δ_r (Σ (pr1 MX)) I P #+ identity ((X ⊗ pr1 MX) ⊗ P)) ·
+                             (s (pr1 MX,, (P,, pt)) #+ pr1 (pr1 λ' P) #+ pr1 α ((X, pr1 MX), P)) ·
+                             (#Σ u #+ pt_inv #+ (identity X) #⊗ u) ·
+                             (alt_map MX A u (pr2 A)).
+
+Definition parameterised_initial_algebra : UU :=
+	∑ (MX : FunctorAlg Σ_I_X_functor has_homsets_C), is_parameterised_initial MX.
+
+End Parameterised_Initial_Algebra.
+
+Lemma is_ω_cocont_Σ_I_X : is_omega_cocont Σ_I_X_functor.
+Proof.
+		refine (is_omega_cocont_BinCoproduct_of_functors bin_coproduct has_homsets_C _ _ _ _).
+		- refine (is_omega_cocont_BinCoproduct_of_functors bin_coproduct has_homsets_C _ _ _ _).
+			+ exact is_ω_cocont_Σ.
+			+ exact (is_omega_cocont_constant_functor has_homsets_C _).
+		- admit. (* preapp *)
+Admitted.
+
+(* The initial (Σ + ΔI + X ⊗)-algebra. *)
+Definition MX : Initial (precategory_FunctorAlg Σ_I_X_functor has_homsets_C).
+Proof.
+	apply (colimAlgInitial _ Z is_ω_cocont_Σ_I_X).
+	(* some colims of shape stuff here *)
+Admitted.
+
+(* This actually comes from a strength, but we'll treat it as a distributor for now. *)
+Context (δ_r : distributor_right).
+
+Check is_parameterised_initial X δ_r.
+
+(* MX carries the structure of a (Σ, s)-monoid. *)
+Theorem initial_Σ_I_X_algebra_is_Σs_mon (MX : Initial (precategory_FunctorAlg Σ_I_X_functor has_homsets_C)) : Σs_mon_ob.
+Proof.
+	pose (MX_ob := (pr1 (InitialObject MX))).
+  use tpair.
+	- use tpair.
+		+ exact MX_ob.
+    + pose (ΣMX_I := bin_coproduct (Σ MX_ob) I). (* ΣMX + I *)
+      pose (ΣMX_I_XMX := bin_coproduct (pr1 (pr1 ΣMX_I)) (X ⊗ MX_ob)). (* ΣMX + I + X ⊗ MX *)
+      pose (ι_2 := pr1 (pr2 (pr1 ΣMX_I_XMX))). (* ΣMX + I --> ΣMX + I + X ⊗ MX *)
+      pose (φ' := pr2 (InitialObject MX)). (* ΣMX + I + X ⊗ MX --> MX *)
+      pose (coprod_functor_app := (BinCoproduct_of_functors_ob C C bin_coproduct (BinCoproduct_of_functors C C bin_coproduct Σ ΔI_functor) X_preapp_functor MX_ob)).
+      assert (equal_codoms : coprod_functor_app = pr1 (pr1 ΣMX_I_XMX)) by reflexivity.
+      pose (φ := rewrite_codom coprod_functor_app (pr1 (pr1 ΣMX_I_XMX)) MX_ob φ' equal_codoms).
+      split; [| split].
+      * (* ς_X *)
+        assert (initial_iso : iso (Σ_I_X_functor MX_ob) MX_ob).
+        -- use tpair.
+           exact (pr2 (InitialObject MX)).
+           exact (initialAlg_is_iso C has_homsets_C Σ_I_X_functor (InitialObject MX) (pr2 MX)).
+				-- Check (inv_from_iso initial_iso) #⊗ (identity MX_ob).
+					 Check pr1 (pr1 λ' MX_ob). (* via I ⊗ MX *)
+
+      * (* ɛ_X *)
+        pose (ι_1 := pr2 (pr2 (pr1 ΣMX_I))). (* I --> ΣMX + I *)
+			  exact (ι_1 · ι_2 · φ).
+      * (* τ_X *)
+        pose (ι_1 := pr1 (pr2 (pr1 ΣMX_I))). (* I --> ΣMX + I *)
+        exact (ι_1 · ι_2 · φ).
+  - split; simpl.
+    (* Σ-monoid structure *)
+    + unfold is_monoid_ob.
+      split; [| split].
+
+    + simpl.
+
+
+Admitted.
+
+End Σ_I_X_Algebra.

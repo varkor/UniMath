@@ -357,7 +357,7 @@ Notation FunctorAlg := precategory_FunctorAlg.
 
 (** ** Lambek's lemma: If (A,a) is an initial F-algebra then a is an iso *)
 
-Section Lambeks_lemma.
+Section Lambek's_lemma.
 
 Variables (C : precategory) (hsC : has_homsets C) (F : functor C C).
 Variables (Aa : algebra_ob F) (AaIsInitial : isInitial (FunctorAlg F hsC) Aa).
@@ -395,7 +395,7 @@ Proof.
 exact (is_iso_qinv _ a' initialAlg_is_iso_subproof).
 Defined.
 
-End Lambeks_lemma.
+End Lambek's_lemma.
 
 
 (** ** The natural numbers are intial for X ↦ 1 + X *)
