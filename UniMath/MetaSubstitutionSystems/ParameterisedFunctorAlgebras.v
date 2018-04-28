@@ -114,7 +114,7 @@ Qed.
 Definition precategory_ParameterisedFunctorAlg (hs : has_homsets C)
   : precategory := tpair _ _ (is_precategory_precategory_parameterised_algebra_data hs).
 
-Lemma has_homsets_ParameterisedFunctorAlg (hs_D : has_homsets D) (hs_C : has_homsets C) : has_homsets (ParameterisedFunctorAlg hs_C).
+Lemma has_homsets_ParameterisedFunctorAlg (hs_D : has_homsets D) (hs_C : has_homsets C) : has_homsets (precategory_ParameterisedFunctorAlg hs_C).
 Proof.
   intros f g.
   apply isaset_parameterised_algebra_mor; assumption.
@@ -126,9 +126,9 @@ Notation ParameterisedFunctorAlg := precategory_ParameterisedFunctorAlg.
 
 Section Parameterised_InitialAlgebra_Functor.
 
-Context {C D : precategory}.
+Context {C D : precategory} (F : functor (binprod_precat D C) C).
 
-Definition F_D (F : functor (binprod_precat D C) C) (d : D) : functor C C.
+Definition F_D (d : D) : functor C C.
 Proof.
   use tpair.
   - use tpair.
@@ -151,19 +151,41 @@ Proof.
       reflexivity.
 Defined.
 
-Context (F : functor (binprod_precat D C) C) (hs_C : has_homsets C).
+Context (hs_C : has_homsets C).
 
-Check ParameterisedFunctorAlg F.
+Check ParameterisedFunctorAlg F hs_C.
 
-Context (z : D).
+(* Ideally, I'd inline this with a "transparent assert", but that doesn't exist, so... *)
+Lemma μF_d'_as_F_ (d d' : D) (f : D ⟦ d, d' ⟧) (μF_ : ∏ d : D, Initial (FunctorAlg (F_D d) hs_C)) : FunctorAlg (F_D d) hs_C.
+Proof.
+  pose (μF_d' := InitialObject (μF_ d')).
+  exists (pr1 μF_d').
+  exact (#F (binprod_precat_pair_of_mor f (identity (pr1 (μF_d')))) · pr2 μF_d').
+Defined.
 
-Definition μF (μF_D : ∏ d : D, Initial (FunctorAlg (F_D F d) hs_C)) : functor D C.
+Definition μF (μF_ : ∏ d : D, Initial (FunctorAlg (F_D d) hs_C)) : functor D C.
 Proof.
   use tpair.
+  - exists (λ d, pr1 (pr1 (μF_ d))).
+    intros d d' f.
+    exact (pr1 (pr1 ((pr2 (μF_ d)) (μF_d'_as_F_ d d' f μF_)))).
   - use tpair.
-    exact (λ d, pr1 (pr1 (μF_D d))).
+    intro d.
+    unfold μF_d'_as_F_.
     simpl.
-    intros d d'.
+    rewrite <- id_on_binprod_precat_pair_of_el.
+    rewrite (functor_id F).
+    rewrite id_left.
+    assert (id_eq : pr1 (pr1 (pr2 (μF_ d) (pr1 (μF_ d)))) = identity (pr1 (pr1 (μF_ d)))); [| exact id_eq].
+    + pose (Y := pr2 (pr2 (μF_ d) (μF_ d)) (identity ((pr1 (μF_ d))))).
+      symmetry.
+      (* exact Y. *)
+      admit.
+    +
+    unfold functor_compax.
+    intros d d' d'' f g.
+    simpl.
+    admit.
 Admitted.
 
 End Parameterised_InitialAlgebra_Functor.

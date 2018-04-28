@@ -1123,3 +1123,42 @@ End EquivalentDefinition.
 
 (** Match non-implicit arguments of [isBinCoproduct] *)
 Arguments isBinCoproduct' _ _ _ _ _ : clear implicits.
+
+Section Transparent_Bincoproduct_Functor.
+
+Check BinCoproduct_of_functors.
+
+Context {C D : precategory}.
+
+(* Definition bin_coprod_of_functors {C D : precategory} (bincoprods : BinCoproducts D) (F G : functor C D) : functor C D × functor C D × functor C D.
+Proof.
+    split; [| split].
+    exact F.
+    exact G.
+    exact (BinCoproduct_of_functors C D bincoprods F G).
+Defined. *)
+
+Definition TernCoprodOfFunctors : UU := functor C D × functor C D × functor C D × functor C D.
+
+Definition tern_coprod_of_functors (bincoprods : BinCoproducts D) (F G H : functor C D) : TernCoprodOfFunctors.
+Proof.
+  split; [| split; [| split]].
+  exact F.
+  exact G.
+  exact H.
+  exact (BinCoproduct_of_functors C D bincoprods (BinCoproduct_of_functors C D bincoprods F G) H).
+Defined.
+
+Definition tern_coprod_of_functors_fst (coprod : TernCoprodOfFunctors) : functor C D := pr1 coprod.
+
+Definition tern_coprod_of_functors_snd (coprod : TernCoprodOfFunctors) : functor C D := pr1 (pr2 coprod).
+
+Definition tern_coprod_of_functors_thd (coprod : TernCoprodOfFunctors) : functor C D := pr1 (pr2 (pr2 coprod)).
+
+Definition tern_coprod_of_functors_coprod (coprod : TernCoprodOfFunctors) : functor C D := pr2 (pr2 (pr2 coprod)).
+
+Check bincoproduct_functor.
+
+Definition tern_coprod_functor (bincoprods : BinCoproducts C) (F G H : functor )
+
+End Transparent_Bincoproduct_Functor.

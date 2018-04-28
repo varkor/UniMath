@@ -1,5 +1,3 @@
-MetaSubstitutionSystem.v
-FSigmaMonoid.v
 ParameterisedFunctorAlgebras.v
-SecondOrderAbstractSyntax.v
 ActionsAndStrengths.v
+SecondOrderAbstractSyntax.v

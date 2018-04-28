@@ -2,6 +2,7 @@ Require Import UniMath.Foundations.PartD. (* for ∑ *)
 Require Import UniMath.CategoryTheory.Categories. (* for precategory *)
 Require Import UniMath.CategoryTheory.functor_categories. (* for functor *)
 Require Import UniMath.CategoryTheory.Monoidal. (* for binprod_precat *)
+Require Import UniMath.CategoryTheory.UnderCategories. (* for UnderCategory *)
 
 Local Open Scope cat.
 
@@ -147,25 +148,25 @@ Notation "f #⊙' g" := (#odot' (f #, g)) (at level 31).
 
 Definition strength_dom : functor (binprod_precat A V) A'.
 Proof.
-use tpair.
-- use tpair.
-  exact (λ ax, F (ax true) ⊙' (ax false)).
-  intros ? ? f.
-  exact ((#F (f true)) #⊙' (f false)).
-- split.
-  + intro.
-    simpl.
-    rewrite (functor_id F).
-    rewrite <- (functor_id odot').
-    rewrite id_on_binprod_precat_pair_of_el.
-    reflexivity.
-  + unfold functor_compax.
-    simpl.
-    intros.
-    rewrite <- (functor_comp odot').
-    rewrite binprod_precat_comp.
-    rewrite <- (functor_comp F).
-    reflexivity.
+  use tpair.
+  - use tpair.
+    exact (λ ax, F (ax true) ⊙' (ax false)).
+    intros ? ? f.
+    exact ((#F (f true)) #⊙' (f false)).
+  - split.
+    + intro.
+      simpl.
+      rewrite (functor_id F).
+      rewrite <- (functor_id odot').
+      rewrite id_on_binprod_precat_pair_of_el.
+      reflexivity.
+    + unfold functor_compax.
+      simpl.
+      intros.
+      rewrite <- (functor_comp odot').
+      rewrite binprod_precat_comp.
+      rewrite <- (functor_comp F).
+      reflexivity.
 Defined.
 
 Definition strength_codom : functor (binprod_precat A V) A'.

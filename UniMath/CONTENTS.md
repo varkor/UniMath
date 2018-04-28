@@ -339,8 +339,9 @@ The packages and files are listed here in logical order: each file depends only 
    - [CCS.v](SubstitutionSystems/CCS.v)
    - [All.v](SubstitutionSystems/All.v)
 ## Package MetaSubstitutionSystems
-   - [MetaSubstitutionSystem.v](MetaSubstitutionSystems/MetaSubstitutionSystem.v)
-   - [FSigmaMonoid.v](MetaSubstitutionSystems/FSigmaMonoid.v)
+   - [ParameterisedFunctorAlgebras.v](MetaSubstitutionSystems/ParameterisedFunctorAlgebras.v)
+   - [ActionsAndStrengths.v](MetaSubstitutionSystems/ActionsAndStrengths.v)
+   - [SecondOrderAbstractSyntax.v](MetaSubstitutionSystems/SecondOrderAbstractSyntax.v)
    - [All.v](MetaSubstitutionSystems/All.v)
 ## Package [Folds](Folds/README.md)
    - [UnicodeNotations.v](Folds/UnicodeNotations.v)
