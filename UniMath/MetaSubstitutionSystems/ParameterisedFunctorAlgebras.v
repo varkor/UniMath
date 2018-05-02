@@ -163,6 +163,51 @@ Proof.
   exact (#F (binprod_precat_pair_of_mor f (identity (pr1 (μF_d')))) · pr2 μF_d').
 Defined.
 
+(* Yet another trivial lemma extracted for Coq. *)
+Lemma id_eq_lower (d : D) (alg : FunctorAlg (F_D d) hs_C) (f : alg --> alg) (eq_id : identity alg = f) : (identity (pr1 alg) = pr1 f).
+Proof.
+  rewrite <- eq_id.
+  reflexivity.
+Defined.
+
+(* pr1 (pr1 (pr2 (μF_ d) (pr1 (μF_ d''),, # F (f · g #, identity (pr1 (μF_ d''))) · pr2 (μF_ d'')))) *)
+
+(* Lemma gloog (μF_ : ∏ d : D, Initial (FunctorAlg (F_D d) hs_C)) (d d' d'' : D) (f : D ⟦ d, d' ⟧) (g : D ⟦ d', d'' ⟧) : FunctorAlg (F_D d) hs_C.
+Proof.
+  exists (pr1 (pr1 (μF_ d''))).
+  exact ((# F (f · g #, (identity (pr1 (pr1 (μF_ d'')))) · (identity (pr1 (pr1 (μF_ d'')))))) · pr2 (pr1 (μF_ d''))).
+Defined.
+
+Lemma snoot (μF_ : ∏ d : D, Initial (FunctorAlg (F_D d) hs_C)) (d d' d'' : D) (f : D ⟦ d, d' ⟧) (g : D ⟦ d', d'' ⟧) : UU.
+Proof.
+
+  pose (WHY := pr1 (pr1 (pr2 (μF_ d) (gloog μF_ d d' d'' f g)))). (* lhs *)
+  unfold gloog in WHY.
+  simpl in WHY.
+  rewrite <- (binprod_precat_comp f (identity (pr1 (pr1 (μF_ d'')))) g (identity (pr1 (pr1 (μF_ d''))))).
+  rewrite <- binprod_precat_comp in WHY.
+  rewrite <- assoc in WHY.
+
+  Check functor_comp F.
+  replace (identity (pr1 (pr1 (μF_ d'')))) with ((identity (pr1 (pr1 (μF_ d'')))) · (identity (pr1 (pr1 (μF_ d''))))) in WHY.
+
+  (* Check # F (f · g #, identity (pr1 (pr1 (μF_ d'')))).
+  Check pr1 (μF_ d'').
+  Check pr2 (μF_ d).
+  pose (L := pr2 (μF_ d)).
+  simpl in L.
+  unfold isInitial in L.
+  Check pr1 (pr1 (μF_ d'')),, # F (f · g #, identity (pr1 (pr1 (μF_ d'')))). *)
+
+  Check
+
+  pr1 (pr1 (pr2 (μF_ d) (pr1 (μF_ d''),, # F (f · g #, identity (pr1 (μF_ d''))) · pr2 (μF_ d'')))).
+
+
+Admitted.
+
+(* Lemma snoot (μF_ : ∏ d : D, Initial (FunctorAlg (F_D d) hs_C)) (d d' d'' : D) (f : D ⟦ d, d' ⟧) (g : D ⟦ d', d'' ⟧) (Z : pr1 (pr1 (pr2 (μF_ d) (pr1 (μF_ d''),, # F (f · g #, identity (pr1 (pr1 (μF_ d'')))) · pr2 (pr1 (μF_ d'')))))) : (pr1 (pr1 (pr2 (μF_ d) (pr1 (μF_ d''),, # F (f · g #, identity (pr1 (μF_ d''))) · pr2 (μF_ d''))))). *)
+
 Definition μF (μF_ : ∏ d : D, Initial (FunctorAlg (F_D d) hs_C)) : functor D C.
 Proof.
   use tpair.
@@ -177,15 +222,16 @@ Proof.
     rewrite (functor_id F).
     rewrite id_left.
     assert (id_eq : pr1 (pr1 (pr2 (μF_ d) (pr1 (μF_ d)))) = identity (pr1 (pr1 (μF_ d)))); [| exact id_eq].
-    + pose (Y := pr2 (pr2 (μF_ d) (μF_ d)) (identity ((pr1 (μF_ d))))).
+    + pose (eq_id := pr2 (pr2 (μF_ d) (μF_ d)) (identity ((pr1 (μF_ d))))).
       symmetry.
-      (* exact Y. *)
-      admit.
-    +
-    unfold functor_compax.
-    intros d d' d'' f g.
-    simpl.
+      exact (id_eq_lower d (pr1 (μF_ d)) (pr1 (pr2 (μF_ d) (μF_ d))) eq_id).
+    + unfold functor_compax.
+      intros d d' d'' f g.
+      unfold μF_d'_as_F_.
+      simpl.
+      replace (# F (f · g #, identity (pr1 (pr1 (μF_ d''))))) with (# F (f · g #, identity (pr1 (pr1 (μF_ d''))) · identity (pr1 (pr1 (μF_ d''))))).
+
     admit.
-Admitted.
+Admitted. *)
 
 End Parameterised_InitialAlgebra_Functor.

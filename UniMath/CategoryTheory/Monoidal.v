@@ -100,12 +100,15 @@ Contents:
 
  Definition is_nat_iso {C C' : precategory_data}
    (F F' : functor_data C C')
-   (t : ∏ x : ob C, iso (F x)  (F' x)) :=
-   ∏ (x x' : ob C)(f : x --> x'),
+   (t : ∏ x : ob C, iso (F x) (F' x)) :=
+   ∏ (x x' : ob C) (f : x --> x'),
      # F f · t x' = t x · #F' f.
 
  Definition nat_iso {C C' : precategory_data} (F F' : functor_data C C') : UU :=
-   total2 (fun t : ∏ x : ob C, iso (F x)  (F' x) => is_nat_iso F F' t).
+   total2 (fun t : ∏ x : ob C, iso (F x) (F' x) => is_nat_iso F F' t).
+
+  (* There's surely a simple way to get the inverse of a natural isomorphism, but I can't find it for now, so this'll do. *)
+  Definition inv_nat_iso {C C' : precategory_data} {F F' : functor_data C C'} (ni : nat_iso F F') : nat_iso F' F. Admitted.
 
  Local Notation "F ⇔ G" := (nat_iso F G) (at level 39) : cat.
  (* to input: type "\<=>" with Agda input method *)

@@ -41,13 +41,18 @@ Notation "'endofunctor' C" := (functor C C) (at level 60).
 
 Context (Mon : monoidal_precat). (* A monoidal precategory (C, I, ⊗). *)
 
+Definition tensor := monoidal_precat_to_tensor Mon.
+
 Let C := monoidal_precat_to_precat Mon.
 Let I := monoidal_precat_to_unit Mon.
-Notation "X ⊗ Y" := ((monoidal_precat_to_tensor Mon) (X , Y)) (at level 31).
-Notation "X #⊗ Y" := (#(monoidal_precat_to_tensor Mon) (X #, Y)) (at level 31).
+Notation "X ⊗ Y" := (tensor (X , Y)) (at level 31).
+Notation "f #⊗ g" := (# tensor (f #, g)) (at level 31, format "f #⊗ g").
 Let α' := monoidal_precat_to_associator Mon.
 Let λ' := monoidal_precat_to_left_unitor Mon.
-Let ρ := monoidal_precat_to_right_unitor Mon.
+Let ρ' := monoidal_precat_to_right_unitor Mon.
+
+(* I don't know why the notation for #⊗ doesn't print, but it's really annoying. *)
+Check identity (I ⊗ I) #⊗ identity I.
 
 Context (Σ: endofunctor C).
 
@@ -64,7 +69,7 @@ Definition monoid_ob_data : UU :=
 
 Definition is_monoid_ob (X : C) (μ : X ⊗ X --> X) (η : I --> X) : UU :=
 	(μ #⊗ identity X · μ = pr1 α' ((X, X), X) · identity X #⊗ μ · μ) × (* Pentagon diagram *)
-	(pr1 (pr1 λ' X) = η #⊗ identity X · μ) × (pr1 (pr1 ρ X) = identity X #⊗ η · μ). (* Unitor diagrams *)
+	(pr1 (pr1 λ' X) = η #⊗ identity X · μ) × (pr1 (pr1 ρ' X) = identity X #⊗ η · μ). (* Unitor diagrams *)
 
 Definition monoid_ob : UU :=
 	∑ X : monoid_ob_data, is_monoid_ob (pr1 X) (pr1 (pr2 X)) (pr2 (pr2 X)).
@@ -374,12 +379,18 @@ Definition opaque_coproduct_strength : UU :=
 Definition opaque_tensorial_strength : UU :=
 	∏ (X Y : C), (Σ X) ⊗ Y --> Σ (X ⊗ Y).
 
+Definition opaque_tensorial_strength_identity_law (st : opaque_tensorial_strength) : UU :=
+	∏ (X : C), (st X I) · #Σ (pr1 (pr1 ρ' X)) = pr1 (pr1 ρ' (Σ X)).
+
+Definition opaque_tensorial_strength_nat_tran_law (st : opaque_tensorial_strength) : UU :=
+	∏ (A B A' B' : C) (f : A --> A') (g : B --> B'), st A B · #Σ (f #⊗ g) = #Σ f #⊗ g · st A' B'.
+
 Context (A : FunctorAlg Σ_I_X has_homsets_C).
 Let A_ob := pr1 A.
 Let A_map := pr2 A.
 
 (* P is a pointed parameter. *)
-Context (P : C) (basepoint_P : I --> P) (cs : opaque_coproduct_strength) (ts : opaque_tensorial_strength) (ψ : P --> A_ob) (ρ : MX_ob ⊗ P --> A_ob).
+Context (P : C) (basepoint_P : I --> P) (cs : opaque_coproduct_strength) (ts : opaque_tensorial_strength) (ψ : P --> A_ob) (υ : MX_ob ⊗ P --> A_ob).
 
 Definition τ_X (Y: FunctorAlg Σ_I_X has_homsets_C) : Σ (pr1 Y) --> (pr1 Y) :=
 	pr1 (pr2 (pr1 (ΣY_I (pr1 Y)))) · pr1 (pr2 (pr1 (ΣY_I_XY (pr1 Y)))) · (pr2 Y).
@@ -397,7 +408,7 @@ Definition is_parameterised_initial : UU :=
 	(* (ΣMX + I + X ⊗ MX) ⊗ P *)
 	MX_map #⊗ (identity P) · (* or MX_map *)
 	(* MX ⊗ MX *)
-	ρ
+	υ
 	(* A *)
 
 	=
@@ -407,7 +418,7 @@ Definition is_parameterised_initial : UU :=
 	(* ΣMX ⊗ P + I ⊗ P + X ⊗ MX ⊗ P *)
 	ts MX_ob P #+ pr1 (pr1 λ' P) #+ pr1 α' ((X, MX_ob), P) ·
 	(* Σ(MX ⊗ P) + P + X ⊗ (MX ⊗ P) *)
-	#Σ ρ #+ ψ #+ (identity X) #⊗ ρ ·
+	#Σ υ #+ ψ #+ (identity X) #⊗ υ ·
 	(* ΣA + A + X ⊗ A *)
 	τ_X_1_A_α_X
 	(* A *)
@@ -415,21 +426,384 @@ Definition is_parameterised_initial : UU :=
 
 End Parameterised_Initial_Algebra.
 
+Section Parameterised_Initiality.
+
+Context (MX : C) (φ : Σ MX --> MX) (e : I --> MX) (α : X ⊗ MX --> MX).
+
+Local Definition ρ_ (X : C) := pr1 (pr1 ρ' X).
+Local Definition λ_ (X : C) := pr1 (pr1 λ' X).
+Local Definition α_ (X Y Z : C) := pr1 α' ((X, Y), Z).
+Local Definition α'inv := inv_nat_iso α'.
+Local Definition αinv_ (X Y Z : C) := pr1 α'inv ((X, Y), Z).
+
+(* Really, we'd like to create this from actions (which are just the tensor product). *)
+Context (st : opaque_tensorial_strength) (st_il : opaque_tensorial_strength_identity_law st) (st_ntl : opaque_tensorial_strength_nat_tran_law st).
+
+Notation "'id' X" := (identity X) (at level 30).
+
+Definition parameterised_initiality {A P : C} (a : Σ A --> A) (b : P --> A) (c : X ⊗ A --> A) (it : MX ⊗ P --> A) : UU :=
+  (λ_ P · b = e #⊗ id P · it) ×
+  (φ #⊗ id P · it = (st MX P) · #Σ it · a) ×
+  (α #⊗ id P · it = (α_ X MX P) · id X #⊗ it · c)
+  .
+
+(* also need uniqueness *)
+Definition is_parameterised_initial' {A P : C} (a : Σ A --> A) (b : P --> A) (c : X ⊗ A --> A) : UU :=
+  ∃! it : MX ⊗ P --> A,
+  parameterised_initiality a b c it.
+
+Context (ipi : ∏ {A P : C} (a : Σ A --> A) (b : P --> A) (c : X ⊗ A --> A), is_parameterised_initial' a b c).
+Local Definition app_ipi := @ipi MX MX φ (id MX) α.
+Local Definition app_conds := pr2 (pr1 app_ipi).
+Local Definition app := pr1 (pr1 app_ipi).
+
+Definition monoid_λ_law : λ_ MX = e #⊗ identity MX · app.
+Proof.
+	pose (λ_tri_law := pr1 app_conds).
+	rewrite id_right in λ_tri_law.
+	exact λ_tri_law.
+Defined.
+
+Definition Σ_alg_law : φ #⊗ id MX · app = (st MX MX) · #Σ app · φ.
+Proof.
+  exact (pr1 (pr2 app_conds)).
+Defined.
+
+Definition post_comp_comm {a b c : C} {f g : a --> b} (eq : f = g) (h : b --> c) : (f · h = g · h).
+Proof.
+	rewrite eq.
+	reflexivity.
+Defined.
+
+(* a specialisation of the coherence conditions for monoidal categories *)
+Context (monoidal_precat_coherence_1 : pr1 ρ' I = pr1 λ' I).
+Context (monoidal_precat_coherence_2 : α #⊗ id I · ρ_ MX = (α_ X MX I) · id X #⊗ ρ_ MX · α).
+Context (monoidal_precat_coherence_3 : (αinv_ I MX MX) · λ_ MX #⊗ id MX = λ_ (MX ⊗ MX)).
+
+Definition monoid_ρ_law_1_1 : λ_ I · e = e #⊗ id I · ρ_ MX.
+Proof.
+	pose (ρ_nat_law := pr2 ρ' I MX e).
+	rewrite monoidal_precat_coherence_1 in ρ_nat_law.
+	symmetry.
+	exact ρ_nat_law.
+Defined.
+
+Definition monoid_ρ_law_1_2 : φ #⊗ id I · ρ_ MX = (st MX I) · #Σ (ρ_ MX) · φ.
+Proof.
+	pose (ρ_nat_law := pr2 ρ' (Σ MX) MX φ).
+	pose (st_id_φ := post_comp_comm (st_il MX) φ).
+	symmetry.
+
+	Lemma monoid_ρ_law_1_2' (ρ_nat_law : # (monoidal_precat_to_tensor Mon) (φ #, id monoidal_precat_to_unit Mon) · pr1 (pr1 ρ' MX) = pr1 (pr1 ρ' (Σ MX)) · φ) (st_id_φ : st MX I · # Σ (pr1 (pr1 ρ' MX)) · φ = pr1 (pr1 ρ' (Σ MX)) · φ) : st MX I · # Σ (ρ_ MX) · φ = # tensor (φ #, id I) · ρ_ MX.
+	Proof.
+		rewrite <- ρ_nat_law in st_id_φ.
+		exact st_id_φ.
+	Defined.
+
+	exact (monoid_ρ_law_1_2' ρ_nat_law st_id_φ).
+Defined.
+
+Definition monoid_ρ_law_1_3 : α #⊗ id I · ρ_ MX = (α_ X MX I) · id X #⊗ ρ_ MX · α.
+	(* this is a direct consequence of the coherence theorem for monoidal categories *)
+	exact monoidal_precat_coherence_2.
+Defined.
+
+Definition functor_tensor_comp {a b a' b' : C} {f g : a --> b} {f' g' : a' --> b'} (eq : f = g) (eq' : f' = g') : (f #⊗ f' = g #⊗ g').
+Proof.
+	rewrite eq.
+	rewrite eq'.
+	reflexivity.
+Defined.
+
+Definition monoid_ρ_law_2_1 : λ_ I · e = e #⊗ id I · (id MX #⊗ e · app).
+Proof.
+	Definition triv_2_1 : id I #⊗ e · e #⊗ id MX = e #⊗ id I · id MX #⊗ e.
+	Proof.
+		repeat rewrite <- functor_comp.
+		repeat rewrite binprod_precat_comp.
+		rewrite id_left.
+		rewrite id_right.
+		reflexivity.
+  Defined.
+  pose (λ_nat_law := pr2 λ' I MX e).
+  pose (app_a_law := monoid_λ_law).
+  unfold λ_ in app_a_law.
+  simpl in λ_nat_law.
+  unfold dom_left_unitor_on_mor in λ_nat_law.
+  simpl in λ_nat_law.
+  unfold nat_iso_to_nat_trans in λ_nat_law.
+  Definition monoid_ρ_law_2_1' (λ_nat_law : # (monoidal_precat_to_tensor Mon) (id monoidal_precat_to_unit Mon #, e) · pr1 (pr1 λ' MX) = pr1 (pr1 λ' I) · e) (app_a_law : pr1 (pr1 λ' MX) = # tensor (e #, id MX) · app) : (# (monoidal_precat_to_tensor Mon) (id monoidal_precat_to_unit Mon #, e) · # tensor (e #, id MX) · app = pr1 (pr1 λ' I) · e).
+  Proof.
+    rewrite app_a_law in λ_nat_law.
+    rewrite assoc in λ_nat_law.
+    exact λ_nat_law.
+  Defined.
+  pose (pent := monoid_ρ_law_2_1' λ_nat_law app_a_law).
+  fold I in pent.
+  fold tensor in pent.
+  rewrite triv_2_1 in pent.
+  symmetry.
+  rewrite assoc.
+  exact pent.
+Defined.
+
+Definition monoid_ρ_law_2_2 : φ #⊗ id I · (id MX #⊗ e · app) = st MX I · #Σ (id MX #⊗ e · app) · φ.
+Proof.
+	Local Definition triv_2_2 : φ #⊗ id I · id MX #⊗ e = #Σ (id MX) #⊗ e · φ #⊗ id MX.
+	Proof.
+		repeat rewrite <- functor_comp.
+		repeat rewrite binprod_precat_comp.
+		rewrite functor_id.
+		repeat rewrite id_right.
+		repeat rewrite id_left.
+		reflexivity.
+	Defined.
+	pose (st_nat_law := st_ntl MX I MX MX (id MX) e).
+	rewrite assoc.
+	rewrite triv_2_2.
+	rewrite <- assoc.
+	rewrite <- assoc.
+	Local Definition monoid_ρ_law_2_2' (st_nat_law : st MX I · # Σ (# tensor (id MX #, e)) = # tensor (# Σ (id MX) #, e) · st MX MX) : (# tensor (# Σ (id MX) #, e) · (# tensor (φ #, id MX) · app) = st MX I · # Σ (# tensor (id MX #, e)) · (# Σ app · φ)).
+  Proof.
+    rewrite st_nat_law.
+    pose (app_a_law := pr1 (pr2 app_conds)).
+		unfold app_ipi in app_a_law.
+		simpl in app_a_law.
+		rewrite <- assoc.
+		rewrite <- assoc in app_a_law.
+		unfold app.
+		unfold app_ipi.
+		Local Definition monoid_ρ_law_2_2'' (app_a_law : # tensor (φ #, id MX) · pr1 (pr1 (ipi MX MX φ (id MX) α)) = st MX MX · (# Σ (pr1 (pr1 (ipi MX MX φ (id MX) α))) · φ)) : (# tensor (# Σ (id MX) #, e) · (# tensor (φ #, id MX) · pr1 (pr1 (ipi MX MX φ (id MX) α))) = # tensor (# Σ (id MX) #, e) · (st MX MX · (# Σ (pr1 (pr1 (ipi MX MX φ (id MX) α))) · φ))).
+		Proof.
+			rewrite <- app_a_law.
+			reflexivity.
+		Defined.
+		exact (monoid_ρ_law_2_2'' app_a_law).
+  Defined.
+  rewrite (functor_comp Σ).
+  pose (monoid_ρ_law_2_2'' := monoid_ρ_law_2_2' st_nat_law).
+  repeat rewrite assoc in monoid_ρ_law_2_2''.
+  repeat rewrite assoc.
+  exact monoid_ρ_law_2_2''.
+Defined.
+
+Definition monoid_ρ_law_2_3 : α #⊗ id I · (id MX #⊗ e · app) = (α_ X MX I) · id X #⊗ (id MX #⊗ e · app) · α.
+Proof.
+	Definition triv_1 : α · id MX = id X #⊗ id MX · α.
+	Proof.
+		rewrite id_right.
+		rewrite <- id_on_binprod_precat_pair_of_el.
+		rewrite functor_id.
+		rewrite id_left.
+		reflexivity.
+	Defined.
+	Definition triv_2 : id I · e = e · id MX.
+	Proof.
+		rewrite id_left.
+		rewrite id_right.
+		reflexivity.
+	Defined.
+	pose (tensor_id_law := functor_tensor_comp triv_1 triv_2).
+	simpl in tensor_id_law.
+	repeat rewrite <- binprod_precat_comp in tensor_id_law.
+  repeat rewrite (functor_comp tensor) in tensor_id_law.
+  pose (app_c_law := pr2 (pr2 app_conds)).
+	unfold app_ipi in app_c_law.
+  unfold α_ in app_c_law.
+  pose (α_nat_law := pr2 α' ((X, MX), I) ((X, MX), MX) ((id X #, id MX) #, e)).
+	pose (α_nat_law' := post_comp_comm α_nat_law (id X #⊗ app · α)).
+	rewrite <- assoc in α_nat_law'.
+  rewrite <- assoc in app_c_law.
+  simpl in α_nat_law'.
+  unfold dom_associator_on_mor, cod_associator_on_mor in α_nat_law'.
+  simpl in α_nat_law'.
+  unfold app in α_nat_law'.
+  unfold app_ipi in α_nat_law'.
+  fold tensor in α_nat_law'.
+  Definition monoid_ρ_law_2_3' (app_c_law : # tensor (α #, id MX) · pr1 (pr1 (ipi MX MX φ (id MX) α)) = pr1 α' ((X, MX), MX) · (# tensor (id X #, pr1 (pr1 (ipi MX MX φ (id MX) α))) · α)) (α_nat_law' : # tensor (# tensor (id X #, id MX) #, e) · (pr1 α' ((X, MX), MX) · (# tensor (id X #, pr1 (pr1 (ipi MX MX φ (id MX) α))) · α)) = pr1 α' ((X, MX), I) · # tensor (id X #, # tensor (id MX #, e)) · (# tensor (id X #, pr1 (pr1 (ipi MX MX φ (id MX) α))) · α)) (tensor_id_law : # tensor (α #, id I) · # tensor (id MX #, e) = # tensor (# tensor (id X #, id MX) #, e) · # tensor (α #, id MX)) : (α #⊗ id I · id MX #⊗ e · app = (α_ X MX I) · id X #⊗ (id MX #⊗ e) · id X #⊗ app · α).
+  Proof.
+    rewrite <- app_c_law in α_nat_law'.
+    rewrite assoc in α_nat_law'.
+    Definition monoid_ρ_law_2_3'' (α_nat_law' : # tensor (# tensor (id X #, id MX) #, e) · # tensor (α #, id MX) · pr1 (pr1 (ipi MX MX φ (id MX) α)) = pr1 α' ((X, MX), I) · # tensor (id X #, # tensor (id MX #, e)) · (# tensor (id X #, pr1 (pr1 (ipi MX MX φ (id MX) α))) · α)) (tensor_id_law : # tensor (α #, id I) · # tensor (id MX #, e) = # tensor (# tensor (id X #, id MX) #, e) · # tensor (α #, id MX)) : (α #⊗ id I · id MX #⊗ e · app = (α_ X MX I) · id X #⊗ (id MX #⊗ e) · id X #⊗ app · α).
+    Proof.
+      rewrite <- tensor_id_law in α_nat_law'.
+      rewrite assoc in α_nat_law'.
+      exact α_nat_law'.
+    Defined.
+    exact (monoid_ρ_law_2_3'' α_nat_law' tensor_id_law).
+  Defined.
+  rewrite assoc.
+  pose (monoid_ρ_law_2_3''' := monoid_ρ_law_2_3' app_c_law α_nat_law' tensor_id_law).
+  Definition monoid_ρ_law_2_3'''' : (α_ X MX I · # tensor (id X #, # tensor (id MX #, e) · app) = α_ X MX I · (# tensor (id X #, # tensor (id MX #, e)) · # tensor (id X #, app))).
+    rewrite <- functor_comp.
+    rewrite binprod_precat_comp.
+    rewrite id_left.
+    reflexivity.
+  Defined.
+  Check monoid_ρ_law_2_3''''.
+  rewrite monoid_ρ_law_2_3''''.
+  rewrite assoc.
+  exact monoid_ρ_law_2_3'''.
+Defined.
+
+Local Definition it2_ipi := @ipi MX I φ e α.
+Local Definition it2 := pr1 it2_ipi.
+
+Definition ρ_MX_as_it2 : parameterised_initiality φ e α (ρ_ MX).
+Proof.
+  exists monoid_ρ_law_1_1.
+  exists monoid_ρ_law_1_2.
+  exact monoid_ρ_law_1_3.
+Defined.
+
+Definition idMX_e_app_as_it2 : parameterised_initiality φ e α (id MX #⊗ e · app).
+  exists monoid_ρ_law_2_1.
+  exists monoid_ρ_law_2_2.
+  exact monoid_ρ_law_2_3.
+Defined.
+
+Definition monoid_ρ_law : ρ_ MX = identity MX #⊗ e · app.
+Proof.
+  pose (ρ_is_it := pr2 it2_ipi ((ρ_ MX),, ρ_MX_as_it2)).
+  pose (idMX_e_app_is_it := pr2 it2_ipi ((id MX #⊗ e · app),, idMX_e_app_as_it2)).
+  rewrite <- idMX_e_app_is_it in ρ_is_it.
+  exact (maponpaths pr1 ρ_is_it).
+Defined.
+
+Definition monoid_α_law_1_2 : φ #⊗ id (MX ⊗ MX) · id MX #⊗ app · app = st MX (MX ⊗ MX) · #Σ (id MX #⊗ app) · #Σ app · φ.
+Proof.
+  Definition monoid_α_law_1_2_triv : φ #⊗ id (MX ⊗ MX) · id MX #⊗ app = id (Σ MX) #⊗ app · φ #⊗ id MX.
+  Proof.
+    repeat rewrite <- functor_comp.
+    repeat rewrite binprod_precat_comp.
+    repeat rewrite id_left.
+    repeat rewrite id_right.
+    reflexivity.
+  Defined.
+  pose (st_nat_law := st_ntl MX (MX ⊗ MX) MX MX (id MX) app).
+	pose (app_b_law := pr1 (pr2 app_conds)).
+	simpl in app_b_law.
+	pose (monoid_α_law_1_2_triv' := post_comp_comm monoid_α_law_1_2_triv app).
+	unfold app in monoid_α_law_1_2_triv'.
+	repeat rewrite <- assoc in monoid_α_law_1_2_triv'.
+	Definition monoid_α_law_1_2' (monoid_α_law_1_2_triv' : # tensor (φ #, id (MX ⊗ MX)) · (# tensor (id MX #, pr1 (pr1 app_ipi)) · pr1 (pr1 app_ipi)) = # tensor (id Σ MX #, pr1 (pr1 app_ipi)) · (# tensor (φ #, id MX) · pr1 (pr1 app_ipi))) (app_b_law : # tensor (φ #, id MX) · pr1 (pr1 app_ipi) = st MX MX · # Σ (pr1 (pr1 app_ipi)) · φ) : (# tensor (φ #, id (MX ⊗ MX)) · (# tensor (id MX #, pr1 (pr1 app_ipi)) · pr1 (pr1 app_ipi)) = # tensor (id Σ MX #, pr1 (pr1 app_ipi)) · (st MX MX · # Σ (pr1 (pr1 app_ipi)) · φ)).
+	Proof.
+		rewrite app_b_law in monoid_α_law_1_2_triv'.
+		exact monoid_α_law_1_2_triv'.
+	Defined.
+	pose (monoid_α_law_1_2'' := monoid_α_law_1_2' monoid_α_law_1_2_triv' app_b_law).
+	rewrite functor_id in st_nat_law.
+	unfold app in st_nat_law.
+	repeat rewrite assoc in monoid_α_law_1_2''.
+	Definition monoid_α_law_1_2''' (monoid_α_law_1_2'' : # tensor (φ #, id (MX ⊗ MX)) · # tensor (id MX #, pr1 (pr1 app_ipi)) · pr1 (pr1 app_ipi) = # tensor (id Σ MX #, pr1 (pr1 app_ipi)) · st MX MX · # Σ (pr1 (pr1 app_ipi)) · φ) (st_nat_law : st MX (MX ⊗ MX) · # Σ (# tensor (id MX #, pr1 (pr1 app_ipi))) = # tensor (id Σ MX #, pr1 (pr1 app_ipi)) · st MX MX) : (φ #⊗ id (MX ⊗ MX) · id MX #⊗ app · app = st MX (MX ⊗ MX) · #Σ (id MX #⊗ app) · #Σ app · φ).
+	Proof.
+		rewrite <- st_nat_law in monoid_α_law_1_2''.
+		exact monoid_α_law_1_2''.
+	Defined.
+	exact (monoid_α_law_1_2''' monoid_α_law_1_2'' st_nat_law).
+Defined.
+
+Definition monoid_α_law_1_3 : α #⊗ id (MX ⊗ MX) · id MX #⊗ app · app = α_ X MX (MX ⊗ MX) · id X #⊗ (id MX #⊗ app) · id X #⊗ app · α.
+Proof.
+	Definition monoid_α_law_1_3_triv : α #⊗ id (MX ⊗ MX) · id MX #⊗ app = id (X ⊗ MX) #⊗ app · α #⊗ id MX.
+	Proof.
+		repeat rewrite <- functor_comp.
+		repeat rewrite binprod_precat_comp.
+		repeat rewrite id_left.
+		repeat rewrite id_right.
+		reflexivity.
+	Defined.
+	pose (α_nat_law := pr2 α' ((X, MX), MX ⊗ MX) ((X, MX), MX) ((id X #, id MX) #, app)).
+	pose (app_c_law := pr2 (pr2 app_conds)).
+	simpl in app_c_law.
+	pose (monoid_α_law_1_3_triv' := post_comp_comm monoid_α_law_1_3_triv app).
+	unfold app in monoid_α_law_1_3_triv'.
+	repeat rewrite <- assoc in monoid_α_law_1_3_triv'.
+	Definition monoid_α_law_1_3' (monoid_α_law_1_3_triv' : # tensor (α #, id (MX ⊗ MX)) · (# tensor (id MX #, pr1 (pr1 app_ipi)) · pr1 (pr1 app_ipi)) = # tensor (id (X ⊗ MX) #, pr1 (pr1 app_ipi)) · (# tensor (α #, id MX) · pr1 (pr1 app_ipi))) (app_c_law : # tensor (α #, id MX) · pr1 (pr1 app_ipi) = α_ X MX MX · # tensor (id X #, pr1 (pr1 app_ipi)) · α) : (# tensor (α #, id (MX ⊗ MX)) · (# tensor (id MX #, pr1 (pr1 app_ipi)) · pr1 (pr1 app_ipi)) = # tensor (id (X ⊗ MX) #, pr1 (pr1 app_ipi)) · (α_ X MX MX · # tensor (id X #, pr1 (pr1 app_ipi)) · α)).
+	Proof.
+		rewrite app_c_law in monoid_α_law_1_3_triv'.
+		exact monoid_α_law_1_3_triv'.
+	Defined.
+	pose (monoid_α_law_1_3'' := monoid_α_law_1_3' monoid_α_law_1_3_triv' app_c_law).
+	simpl in α_nat_law.
+	unfold dom_associator_on_mor, cod_associator_on_mor in α_nat_law.
+	simpl in α_nat_law.
+	unfold app in α_nat_law.
+	(* unfold app_ipi in α_nat_law. *)
+	fold tensor in α_nat_law.
+	repeat rewrite <- (functor_id tensor) in monoid_α_law_1_3''.
+	repeat rewrite id_on_binprod_precat_pair_of_el in monoid_α_law_1_3''.
+	repeat rewrite assoc in monoid_α_law_1_3''.
+	symmetry in monoid_α_law_1_3''.
+	unfold α_ in monoid_α_law_1_3''.
+	Definition monoid_α_law_1_3''' (monoid_α_law_1_3'' : # tensor (# tensor (id X #, id MX) #, pr1 (pr1 app_ipi)) · pr1 α' ((X, MX), MX) · # tensor (id X #, pr1 (pr1 app_ipi)) · α = # tensor (α #, # tensor (id MX #, id MX)) · # tensor (id MX #, pr1 (pr1 app_ipi)) · pr1 (pr1 app_ipi)) (α_nat_law : # tensor (# tensor (id X #, id MX) #, pr1 (pr1 app_ipi)) · pr1 α' ((X, MX), MX) = pr1 α' ((X, MX), MX ⊗ MX) · # tensor (id X #, # tensor (id MX #, pr1 (pr1 app_ipi)))) : (α #⊗ id (MX ⊗ MX) · id MX #⊗ app · app = α_ X MX (MX ⊗ MX) · id X #⊗ (id MX #⊗ app) · id X #⊗ app · α).
+	Proof.
+		rewrite α_nat_law in monoid_α_law_1_3''.
+		simpl in monoid_α_law_1_3''.
+		unfold α_.
+		unfold app.
+		symmetry.
+		rewrite <- (functor_id tensor).
+		rewrite id_on_binprod_precat_pair_of_el.
+		exact monoid_α_law_1_3''.
+	Defined.
+	exact (monoid_α_law_1_3''' monoid_α_law_1_3'' α_nat_law).
+Defined.
+
+Tactic Notation "force" "(" ident(name) ":" constr(type) ")" := assert (name' : type) by (exact name);
+     clear name;
+     rename name' into name.
+
+Definition monoid_α_law_2_1 : λ_ (MX ⊗ MX) · app = e #⊗ id (MX ⊗ MX) · αinv_ MX MX MX · app #⊗ id MX · app.
+Proof.
+	pose (αinv_nat_law := post_comp_comm (pr2 α'inv ((I, MX), MX) ((MX, MX), MX) ((e #, id MX) #, id MX)) (app #⊗ id MX)).
+	simpl in αinv_nat_law.
+	unfold dom_associator_on_mor, cod_associator_on_mor in αinv_nat_law.
+	simpl in αinv_nat_law.
+	Definition monoid_α_law_2_1' : λ_ MX #⊗ id MX · id MX #⊗ id MX = (e #⊗ id MX) #⊗ id MX · app #⊗ id MX.
+	Proof.
+		repeat rewrite <- (functor_comp tensor).
+		repeat rewrite binprod_precat_comp.
+		repeat rewrite id_left.
+		rewrite id_right.
+		exact (maponpaths (λ x, # tensor x) (maponpaths (λ x, (x #, id MX)) monoid_λ_law)).
+	Defined.
+  repeat rewrite <- assoc in αinv_nat_law.
+  force (αinv_nat_law : (# tensor (e #, # tensor (id MX #, id MX)) · (pr1 α'inv ((MX, MX), MX) · # tensor (app #, id MX)) = pr1 α'inv ((I, MX), MX) · (# tensor (# tensor (e #, id MX) #, id MX) · # tensor (app #, id MX)))).
+  rewrite <- monoid_α_law_2_1' in αinv_nat_law.
+  repeat rewrite assoc in αinv_nat_law.
+  pose (coher := monoidal_precat_coherence_3).
+  unfold αinv_ in coher.
+  force (αinv_nat_law : (# tensor (e #, # tensor (id MX #, id MX)) · pr1 α'inv ((MX, MX), MX) · # tensor (app #, id MX) = pr1 α'inv ((I, MX), MX) · # tensor (λ_ MX #, id MX) · # tensor (id MX #, id MX))).
+  force (coher : (pr1 α'inv ((I, MX), MX) · # tensor (λ_ MX #, id MX) = λ_ (MX ⊗ MX))).
+  rewrite coher in αinv_nat_law.
+  symmetry.
+  rewrite <- id_on_binprod_precat_pair_of_el in αinv_nat_law.
+  rewrite (functor_id tensor) in αinv_nat_law.
+  rewrite id_right in αinv_nat_law.
+  exact (post_comp_comm αinv_nat_law app).
+Defined.
+
+End Parameterised_Initiality.
+
+(* We assume that X ⊗ - is ω-cocontinuous and that C has ω-colimits. *)
+Context (is_ω_cocont_X_preapp : is_omega_cocont X_preapp_functor) (has_ω_colimits : ColimCocone (initChain Z Σ_I_X)).
+
 Lemma is_ω_cocont_Σ_I_X : is_omega_cocont Σ_I_X.
 Proof.
 		refine (is_omega_cocont_BinCoproduct_of_functors bin_coproduct has_homsets_C _ _ _ _).
 		- refine (is_omega_cocont_BinCoproduct_of_functors bin_coproduct has_homsets_C _ _ _ _).
 			+ exact is_ω_cocont_Σ.
 			+ exact (is_omega_cocont_constant_functor has_homsets_C _).
-		- admit. (* preapp *)
-Admitted.
+		- exact is_ω_cocont_X_preapp.
+Defined.
 
 (* The initial (Σ + ΔI + X ⊗)-algebra. *)
 Definition MX : Initial (precategory_FunctorAlg Σ_I_X has_homsets_C).
 Proof.
 	apply (colimAlgInitial _ Z is_ω_cocont_Σ_I_X).
-	(* some colims of shape stuff here *)
-Admitted.
+	exact has_ω_colimits.
+Defined.
 
 (* This actually comes from a strength, but we'll treat it as a distributor for now. *)
 (* Context (δ_r : distributor_right). *)
