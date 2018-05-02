@@ -1157,8 +1157,4 @@ Definition tern_coprod_of_functors_thd (coprod : TernCoprodOfFunctors) : functor
 
 Definition tern_coprod_of_functors_coprod (coprod : TernCoprodOfFunctors) : functor C D := pr2 (pr2 (pr2 coprod)).
 
-Check bincoproduct_functor.
-
-Definition tern_coprod_functor (bincoprods : BinCoproducts C) (F G H : functor )
-
 End Transparent_Bincoproduct_Functor.
