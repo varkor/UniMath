@@ -21,6 +21,8 @@ Require Import UniMath.CategoryTheory.limits.initial.
 
 Local Open Scope cat.
 
+Notation "'id' X" := (identity X) (at level 30).
+
 (* Assumed: monoidal categories *)
 Require Import UniMath.CategoryTheory.Monoidal.
 (* Required for # *)
@@ -373,6 +375,12 @@ Let ΣY_I_XY (Y : C) := bin_coproduct (ΣY_I Y) (X_preapp_functor Y).
 Let ΣY_Y (Y : C) := bin_coproduct (Σ Y) Y.
 Let ΣY_Y_XY (Y : C) := bin_coproduct (ΣY_Y Y) (X_preapp_functor Y).
 
+Local Definition ρ_ (X : C) := pr1 (pr1 ρ' X).
+Local Definition λ_ (X : C) := pr1 (pr1 λ' X).
+Local Definition α_ (X Y Z : C) := pr1 α' ((X, Y), Z).
+Local Definition α'inv := inv_nat_iso α'.
+Local Definition αinv_ (X Y Z : C) := pr1 α'inv ((X, Y), Z).
+
 Definition opaque_coproduct_strength : UU :=
 	∏ (W X Y Z : C), (W + X + Y) ⊗ Z --> (W ⊗ Z + X ⊗ Z + Y ⊗ Z).
 
@@ -380,7 +388,10 @@ Definition opaque_tensorial_strength : UU :=
 	∏ (X Y : C), (Σ X) ⊗ Y --> Σ (X ⊗ Y).
 
 Definition opaque_tensorial_strength_identity_law (st : opaque_tensorial_strength) : UU :=
-	∏ (X : C), (st X I) · #Σ (pr1 (pr1 ρ' X)) = pr1 (pr1 ρ' (Σ X)).
+  ∏ (X : C), (st X I) · #Σ (pr1 (pr1 ρ' X)) = pr1 (pr1 ρ' (Σ X)).
+
+Definition opaque_tensorial_strength_assoc_law (st : opaque_tensorial_strength) : UU :=
+  ∏ (A X Y : C), (st A (X ⊗ Y)) · #Σ (αinv_ A X Y) = (αinv_ (Σ A) X Y) · (st A X) #⊗ id Y · (st (A ⊗ X) Y).
 
 Definition opaque_tensorial_strength_nat_tran_law (st : opaque_tensorial_strength) : UU :=
 	∏ (A B A' B' : C) (f : A --> A') (g : B --> B'), st A B · #Σ (f #⊗ g) = #Σ f #⊗ g · st A' B'.
@@ -430,16 +441,8 @@ Section Parameterised_Initiality.
 
 Context (MX : C) (φ : Σ MX --> MX) (e : I --> MX) (α : X ⊗ MX --> MX).
 
-Local Definition ρ_ (X : C) := pr1 (pr1 ρ' X).
-Local Definition λ_ (X : C) := pr1 (pr1 λ' X).
-Local Definition α_ (X Y Z : C) := pr1 α' ((X, Y), Z).
-Local Definition α'inv := inv_nat_iso α'.
-Local Definition αinv_ (X Y Z : C) := pr1 α'inv ((X, Y), Z).
-
 (* Really, we'd like to create this from actions (which are just the tensor product). *)
-Context (st : opaque_tensorial_strength) (st_il : opaque_tensorial_strength_identity_law st) (st_ntl : opaque_tensorial_strength_nat_tran_law st).
-
-Notation "'id' X" := (identity X) (at level 30).
+Context (st : opaque_tensorial_strength) (st_il : opaque_tensorial_strength_identity_law st) (st_al : opaque_tensorial_strength_assoc_law st) (st_ntl : opaque_tensorial_strength_nat_tran_law st).
 
 Definition parameterised_initiality {A P : C} (a : Σ A --> A) (b : P --> A) (c : X ⊗ A --> A) (it : MX ⊗ P --> A) : UU :=
   (λ_ P · b = e #⊗ id P · it) ×
@@ -469,6 +472,7 @@ Proof.
   exact (pr1 (pr2 app_conds)).
 Defined.
 
+(* this can just be replaced with maponpaths *)
 Definition post_comp_comm {a b c : C} {f g : a --> b} (eq : f = g) (h : b --> c) : (f · h = g · h).
 Proof.
 	rewrite eq.
@@ -479,6 +483,7 @@ Defined.
 Context (monoidal_precat_coherence_1 : pr1 ρ' I = pr1 λ' I).
 Context (monoidal_precat_coherence_2 : α #⊗ id I · ρ_ MX = (α_ X MX I) · id X #⊗ ρ_ MX · α).
 Context (monoidal_precat_coherence_3 : (αinv_ I MX MX) · λ_ MX #⊗ id MX = λ_ (MX ⊗ MX)).
+Context (monoidal_precat_coherence_4 : α_ X MX (MX ⊗ MX) · id X #⊗ (αinv_ MX MX MX) = αinv_ (X ⊗ MX) MX MX · (α_ X MX MX) #⊗ id MX · (α_ X (MX ⊗ MX) MX)).
 
 Definition monoid_ρ_law_1_1 : λ_ I · e = e #⊗ id I · ρ_ MX.
 Proof.
@@ -499,7 +504,6 @@ Proof.
 		rewrite <- ρ_nat_law in st_id_φ.
 		exact st_id_φ.
 	Defined.
-
 	exact (monoid_ρ_law_1_2' ρ_nat_law st_id_φ).
 Defined.
 
@@ -670,7 +674,37 @@ Proof.
   exact (maponpaths pr1 ρ_is_it).
 Defined.
 
-Definition monoid_α_law_1_2 : φ #⊗ id (MX ⊗ MX) · id MX #⊗ app · app = st MX (MX ⊗ MX) · #Σ (id MX #⊗ app) · #Σ app · φ.
+Tactic Notation "force" "(" ident(name) ":" constr(type) ")" := assert (name' : type) by (exact name);
+  clear name;
+  rename name' into name.
+
+Definition monoid_α_law_1_1 : λ_ (MX ⊗ MX) · app = e #⊗ id (MX ⊗ MX) · (id MX #⊗ app · app).
+Proof.
+  pose (λ_nat_law := pr2 λ' (MX ⊗ MX) MX app).
+  pose (λ_mon_law := monoid_λ_law).
+  simpl in λ_nat_law.
+  unfold dom_left_unitor_on_mor in λ_nat_law.
+  simpl in λ_nat_law.
+  fold I tensor in λ_nat_law.
+  unfold λ_ in λ_mon_law.
+  pose (λ_mon_law' := maponpaths (λ x, id I #⊗ app · x) λ_mon_law).
+  simpl in λ_mon_law'.
+  force (λ_nat_law : (# tensor (id I #, app) · pr1 λ' MX = pr1 λ' (MX ⊗ MX) · app)).
+  force (λ_mon_law' : (# tensor (id I #, app) · pr1 λ' MX = # tensor (id I #, app) · (# tensor (e #, id MX) · app))).
+  rewrite λ_mon_law' in λ_nat_law.
+  assert (triv : id I #⊗ app · (e #⊗ id MX · app) = e #⊗ id (MX ⊗ MX) · (id MX #⊗ app · app)) by
+  (repeat rewrite assoc;
+  repeat rewrite <- functor_comp;
+  repeat rewrite binprod_precat_comp;
+  repeat rewrite id_left;
+  repeat rewrite id_right;
+  reflexivity).
+  rewrite triv in λ_nat_law.
+  symmetry in λ_nat_law.
+  exact λ_nat_law.
+Defined.
+
+Definition monoid_α_law_1_2 : φ #⊗ id (MX ⊗ MX) · (id MX #⊗ app · app) = st MX (MX ⊗ MX) · #Σ (id MX #⊗ app · app) · φ.
 Proof.
   Definition monoid_α_law_1_2_triv : φ #⊗ id (MX ⊗ MX) · id MX #⊗ app = id (Σ MX) #⊗ app · φ #⊗ id MX.
   Proof.
@@ -699,11 +733,13 @@ Proof.
 	Proof.
 		rewrite <- st_nat_law in monoid_α_law_1_2''.
 		exact monoid_α_law_1_2''.
-	Defined.
+  Defined.
+  rewrite (functor_comp Σ).
+  repeat rewrite assoc.
 	exact (monoid_α_law_1_2''' monoid_α_law_1_2'' st_nat_law).
 Defined.
 
-Definition monoid_α_law_1_3 : α #⊗ id (MX ⊗ MX) · id MX #⊗ app · app = α_ X MX (MX ⊗ MX) · id X #⊗ (id MX #⊗ app) · id X #⊗ app · α.
+Definition monoid_α_law_1_3 : α #⊗ id (MX ⊗ MX) · (id MX #⊗ app · app) = α_ X MX (MX ⊗ MX) · (id X #⊗ (id MX #⊗ app · app)) · α.
 Proof.
 	Definition monoid_α_law_1_3_triv : α #⊗ id (MX ⊗ MX) · id MX #⊗ app = id (X ⊗ MX) #⊗ app · α #⊗ id MX.
 	Proof.
@@ -746,15 +782,18 @@ Proof.
 		rewrite <- (functor_id tensor).
 		rewrite id_on_binprod_precat_pair_of_el.
 		exact monoid_α_law_1_3''.
-	Defined.
+  Defined.
+  assert (comp : # tensor (id X #, # tensor (id MX #, app)) · # tensor (id X #, app) = # tensor (id X #, # tensor (id MX #, app) · app)) by
+  (rewrite <- functor_comp;
+  rewrite binprod_precat_comp;
+  rewrite id_left;
+  reflexivity).
+  rewrite <- comp.
+  repeat rewrite assoc.
 	exact (monoid_α_law_1_3''' monoid_α_law_1_3'' α_nat_law).
 Defined.
 
-Tactic Notation "force" "(" ident(name) ":" constr(type) ")" := assert (name' : type) by (exact name);
-     clear name;
-     rename name' into name.
-
-Definition monoid_α_law_2_1 : λ_ (MX ⊗ MX) · app = e #⊗ id (MX ⊗ MX) · αinv_ MX MX MX · app #⊗ id MX · app.
+Definition monoid_α_law_2_1 : λ_ (MX ⊗ MX) · app = e #⊗ id (MX ⊗ MX) · (αinv_ MX MX MX · app #⊗ id MX · app).
 Proof.
 	pose (αinv_nat_law := post_comp_comm (pr2 α'inv ((I, MX), MX) ((MX, MX), MX) ((e #, id MX) #, id MX)) (app #⊗ id MX)).
 	simpl in αinv_nat_law.
@@ -781,7 +820,170 @@ Proof.
   rewrite <- id_on_binprod_precat_pair_of_el in αinv_nat_law.
   rewrite (functor_id tensor) in αinv_nat_law.
   rewrite id_right in αinv_nat_law.
+  repeat rewrite assoc.
   exact (post_comp_comm αinv_nat_law app).
+Defined.
+
+Definition monoid_α_law_2_2 : φ #⊗ id (MX ⊗ MX) · (αinv_ MX MX MX · app #⊗ id MX · app) = st MX (MX ⊗ MX) · #Σ (αinv_ MX MX MX · (app #⊗ id MX) · app) · φ.
+Proof.
+  pose (st_assoc_law := post_comp_comm (st_al MX MX MX) (#Σ (app #⊗ (id MX)))).
+  unfold αinv_ in st_assoc_law.
+  repeat rewrite <- assoc in st_assoc_law.
+  pose (st_nat_law := st_ntl (MX ⊗ MX) MX MX MX app (id MX)).
+  force (st_nat_law : (st (MX ⊗ MX) MX · # Σ (# tensor (app #, id MX)) = # tensor (# Σ app #, id MX) · st MX MX)).
+  force (st_assoc_law : (st MX (MX ⊗ MX) · (# Σ (pr1 α'inv ((MX, MX), MX)) · # Σ (# tensor (app #, id MX))) = pr1 α'inv ((Σ MX, MX), MX) · (# tensor (st MX MX #, id MX) · (st (MX ⊗ MX) MX · # Σ (# tensor (app #, id MX)))))).
+  rewrite st_nat_law in st_assoc_law.
+  pose (st_assoc_law' := post_comp_comm st_assoc_law (#Σ app · φ)).
+  repeat rewrite <- assoc in st_assoc_law'.
+  pose (Σ_alg_law' := Σ_alg_law).
+  rewrite <- assoc in Σ_alg_law'.
+  force (Σ_alg_law' : (# tensor (φ #, id MX) · app = st MX MX · (# Σ app · φ))).
+  force (st_assoc_law' : (st MX (MX ⊗ MX) · (# Σ (pr1 α'inv ((MX, MX), MX)) · (# Σ (# tensor (app #, id MX)) · (# Σ app · φ))) = pr1 α'inv ((Σ MX, MX), MX) · (# tensor (st MX MX #, id MX) · (# tensor (# Σ app #, id MX) · (st MX MX · (# Σ app · φ)))))).
+  rewrite <- Σ_alg_law' in st_assoc_law'.
+  pose (Σ_alg_law'' := maponpaths (λ x, x #⊗ id MX) Σ_alg_law).
+  simpl in Σ_alg_law''.
+  rewrite <- (id_right (id MX)) in Σ_alg_law''.
+  repeat rewrite <- binprod_precat_comp in Σ_alg_law''.
+  repeat rewrite (functor_comp tensor) in Σ_alg_law''.
+  rewrite id_right in Σ_alg_law''.
+  assert (expand_Σ_alg : (st MX MX · # Σ app) #⊗ id MX = st MX MX #⊗ id MX · # Σ app #⊗ id MX) by (
+    rewrite <- (id_right (id MX));
+    repeat rewrite <- binprod_precat_comp;
+    rewrite (functor_comp tensor);
+    rewrite id_right;
+    reflexivity
+    ).
+  force (Σ_alg_law'' : (# tensor (# tensor (φ #, id MX) #, id MX) · # tensor (app #, id MX) = # tensor (st MX MX · # Σ app #, id MX) · # tensor (φ #, id MX))).
+  rewrite expand_Σ_alg in Σ_alg_law''.
+  pose (Σ_alg_law''' := post_comp_comm Σ_alg_law'' app).
+  repeat rewrite <- assoc in Σ_alg_law'''.
+  force (st_assoc_law' : (st MX (MX ⊗ MX) · (# Σ (pr1 α'inv ((MX, MX), MX)) · (# Σ (# tensor (app #, id MX)) · (# Σ app · φ))) = pr1 α'inv ((Σ MX, MX), MX) · (# tensor (st MX MX #, id MX) · (# tensor (# Σ app #, id MX) · (# tensor (φ #, id MX) · app))))).
+  force (Σ_alg_law''' : (# tensor (# tensor (φ #, id MX) #, id MX) · (# tensor (app #, id MX) · app) = # tensor (st MX MX #, id MX) · (# tensor (# Σ app #, id MX) · (# tensor (φ #, id MX) · app)))).
+  rewrite <- Σ_alg_law''' in st_assoc_law'.
+  repeat rewrite assoc in st_assoc_law'.
+  pose (αinv_nat_law := pr2 α'inv ((Σ MX, MX), MX) ((MX, MX), MX) ((φ #, id MX) #, id MX)).
+  simpl in αinv_nat_law.
+  unfold dom_associator_on_mor, cod_associator_on_mor in αinv_nat_law.
+  simpl in αinv_nat_law.
+  fold tensor in αinv_nat_law.
+  force (st_assoc_law' : (st MX (MX ⊗ MX) · # Σ (pr1 α'inv ((MX, MX), MX)) · # Σ (# tensor (app #, id MX)) · # Σ app · φ = pr1 α'inv ((Σ MX, MX), MX) · # tensor (# tensor (φ #, id MX) #, id MX) · # tensor (app #, id MX) · app)).
+  force (αinv_nat_law : (# tensor (φ #, # tensor (id MX #, id MX)) · pr1 α'inv ((MX, MX), MX) = pr1 α'inv ((Σ MX, MX), MX) · # tensor (# tensor (φ #, id MX) #, id MX))).
+  rewrite <- αinv_nat_law in st_assoc_law'.
+  rewrite <- (functor_id tensor).
+  rewrite id_on_binprod_precat_pair_of_el.
+  unfold αinv_.
+  symmetry.
+  repeat rewrite (functor_comp Σ).
+  repeat rewrite assoc.
+  exact st_assoc_law'.
+Defined.
+
+Definition monoid_α_law_2_3 : α #⊗ id (MX ⊗ MX) · (αinv_ MX MX MX · app #⊗ id MX · app) = α_ X MX (MX ⊗ MX) · id X #⊗ (αinv_ MX MX MX · (app #⊗ id MX) · app) · α.
+Proof.
+  pose (coher := post_comp_comm monoidal_precat_coherence_4 (id X #⊗ (app #⊗ id MX))).
+  unfold α_, αinv_ in coher.
+  repeat rewrite <- assoc in coher.
+  pose (α_nat_law := pr2 α' ((X, MX ⊗ MX), MX) ((X, MX), MX) ((id X #, app) #, id MX)).
+  unfold dom_associator_on_mor, cod_associator_on_mor in α_nat_law.
+  simpl in α_nat_law.
+  fold tensor in α_nat_law.
+  force (α_nat_law : (# tensor (# tensor (id X #, app) #, id MX) · pr1 α' ((X, MX), MX) = pr1 α' ((X, MX ⊗ MX), MX) · # tensor (id X #, # tensor (app #, id MX)))).
+  force (coher : (pr1 α' ((X, MX), MX ⊗ MX) · (# tensor (id X #, pr1 α'inv ((MX, MX), MX)) · # tensor (id X #, # tensor (app #, id MX))) = pr1 α'inv ((X ⊗ MX, MX), MX) · (# tensor (pr1 α' ((X, MX), MX) #, id MX) · (pr1 α' ((X, MX ⊗ MX), MX) · # tensor (id X #, # tensor (app #, id MX)))))).
+  rewrite <- α_nat_law in coher.
+  pose (coher' := post_comp_comm coher (id X #⊗ app · α)).
+  repeat rewrite <- assoc in coher'.
+  pose (app_c_law := pr2 (pr2 app_conds)).
+  fold app in app_c_law.
+  unfold α_ in app_c_law.
+  rewrite <- assoc in app_c_law.
+  force (app_c_law : (# tensor (α #, id MX) · app = pr1 α' ((X, MX), MX) · (# tensor (id X #, app) · α))).
+  force (coher' : (pr1 α' ((X, MX), MX ⊗ MX) · (# tensor (id X #, pr1 α'inv ((MX, MX), MX)) · (# tensor (id X #, # tensor (app #, id MX)) · (# tensor (id X #, app) · α))) = pr1 α'inv ((X ⊗ MX, MX), MX) · (# tensor (pr1 α' ((X, MX), MX) #, id MX) · (# tensor (# tensor (id X #, app) #, id MX) · (pr1 α' ((X, MX), MX) · (# tensor (id X #, app) · α)))))).
+  rewrite <- app_c_law in coher'.
+  pose (app_c_law' := maponpaths (λ x, x #⊗ id MX) app_c_law).
+  simpl in app_c_law'.
+  rewrite <- (id_right (id MX)) in app_c_law'.
+  repeat rewrite <- binprod_precat_comp in app_c_law'.
+  repeat rewrite (functor_comp tensor) in app_c_law'.
+  rewrite id_right in app_c_law'.
+  assert (expand_app_c : ((id X #⊗ app) · α) #⊗ id MX = (id X #⊗ app) #⊗ id MX · α #⊗ id MX) by (
+    rewrite <- (id_right (id MX));
+    repeat rewrite <- binprod_precat_comp;
+    rewrite (functor_comp tensor);
+    rewrite id_right;
+    reflexivity
+    ).
+  force (app_c_law' : (# tensor (# tensor (α #, id MX) #, id MX) · # tensor (app #, id MX) = # tensor (pr1 α' ((X, MX), MX) #, id MX) · # tensor (# tensor (id X #, app) · α #, id MX))).
+  rewrite expand_app_c in app_c_law'.
+  pose (app_c_law'' := post_comp_comm app_c_law' app).
+  repeat rewrite <- assoc in app_c_law''.
+  force (coher' : (pr1 α' ((X, MX), MX ⊗ MX) · (# tensor (id X #, pr1 α'inv ((MX, MX), MX)) · (# tensor (id X #, # tensor (app #, id MX)) · (# tensor (id X #, app) · α))) = pr1 α'inv ((X ⊗ MX, MX), MX) · (# tensor (pr1 α' ((X, MX), MX) #, id MX) · (# tensor (# tensor (id X #, app) #, id MX) · (# tensor (α #, id MX) · app))))).
+  force (app_c_law'' : (# tensor (# tensor (α #, id MX) #, id MX) · (# tensor (app #, id MX) · app) = # tensor (pr1 α' ((X, MX), MX) #, id MX) · (# tensor (# tensor (id X #, app) #, id MX) · (# tensor (α #, id MX) · app)))).
+  rewrite <- app_c_law'' in coher'.
+  repeat rewrite assoc in coher'.
+  pose (αinv_nat_law := pr2 α'inv ((X ⊗ MX, MX), MX) ((MX, MX), MX) ((α #, id MX) #, id MX)).
+  simpl in αinv_nat_law.
+  unfold dom_associator_on_mor, cod_associator_on_mor in αinv_nat_law.
+  simpl in αinv_nat_law.
+  fold tensor in αinv_nat_law.
+  force (coher' : (pr1 α' ((X, MX), MX ⊗ MX) · # tensor (id X #, pr1 α'inv ((MX, MX), MX)) · # tensor (id X #, # tensor (app #, id MX)) · # tensor (id X #, app) · α = pr1 α'inv ((X ⊗ MX, MX), MX) · # tensor (# tensor (α #, id MX) #, id MX) · # tensor (app #, id MX) · app)).
+  force (αinv_nat_law : (# tensor (α #, # tensor (id MX #, id MX)) · pr1 α'inv ((MX, MX), MX) = pr1 α'inv ((X ⊗ MX, MX), MX) · # tensor (# tensor (α #, id MX) #, id MX))).
+  rewrite <- αinv_nat_law in coher'.
+  symmetry in coher'.
+  rewrite <- id_on_binprod_precat_pair_of_el in coher'.
+  rewrite (functor_id tensor) in coher'.
+  assert (coher'' : # tensor (α #, id (MX ⊗ MX)) · pr1 α'inv ((MX, MX), MX) · # tensor (app #, id MX) · app = # tensor (α #, id (MX ⊗ MX)) · (αinv_ MX MX MX · # tensor (app #, id MX) · app)) by
+  (unfold αinv_;
+  repeat rewrite assoc;
+  reflexivity).
+  force (coher' : (# tensor (α #, id (MX ⊗ MX)) · pr1 α'inv ((MX, MX), MX) · # tensor (app #, id MX) · app = pr1 α' ((X, MX), MX ⊗ MX) · # tensor (id X #, pr1 α'inv ((MX, MX), MX)) · # tensor (id X #, # tensor (app #, id MX)) · # tensor (id X #, app) · α)).
+  rewrite coher'' in coher'.
+  assert (coher''' : # tensor (id X #, pr1 α'inv ((MX, MX), MX)) · # tensor (id X #, # tensor (app #, id MX)) · # tensor (id X #, app) = # tensor (id X #, pr1 α'inv ((MX, MX), MX) · # tensor (app #, id MX) · app)) by
+  (repeat rewrite <- (functor_comp tensor);
+  repeat rewrite binprod_precat_comp;
+  repeat rewrite id_left;
+  reflexivity).
+  pose (coher'''' := maponpaths (λ x, pr1 α' ((X, MX), MX ⊗ MX) · x · α) coher'''); simpl in coher''''.
+  repeat rewrite assoc in coher''''.
+  force (coher' : (# tensor (α #, id (MX ⊗ MX)) · (αinv_ MX MX MX · # tensor (app #, id MX) · app) = pr1 α' ((X, MX), MX ⊗ MX) · # tensor (id X #, pr1 α'inv ((MX, MX), MX)) · # tensor (id X #, # tensor (app #, id MX)) · # tensor (id X #, app) · α)).
+  force (coher'''' : (pr1 α' ((X, MX), MX ⊗ MX) · # tensor (id X #, pr1 α'inv ((MX, MX), MX)) · # tensor (id X #, # tensor (app #, id MX)) · # tensor (id X #, app) · α = pr1 α' ((X, MX), MX ⊗ MX) · # tensor (id X #, pr1 α'inv ((MX, MX), MX) · # tensor (app #, id MX) · app) · α)).
+  rewrite coher'''' in coher'.
+  exact coher'.
+Defined.
+
+Check @ipi.
+Local Definition it3_ipi := @ipi MX (MX ⊗ MX) φ app α.
+Local Definition it3 := pr1 it3_ipi.
+
+Definition idMX_app_app_as_it3 : parameterised_initiality φ app α (id MX #⊗ app · app).
+Proof.
+  exists monoid_α_law_1_1.
+  exists monoid_α_law_1_2.
+  exact monoid_α_law_1_3.
+Defined.
+
+Definition αinv_MXMXMX_app_idMX_app_as_it3 : parameterised_initiality φ app α (αinv_ MX MX MX · app #⊗ id MX · app).
+  exists monoid_α_law_2_1.
+  exists monoid_α_law_2_2.
+  exact monoid_α_law_2_3.
+Defined.
+
+Context (α_iso_cancel : id ((MX ⊗ MX) ⊗ MX) = α_ MX MX MX · αinv_ MX MX MX).
+
+Definition monoid_α_law : app #⊗ id MX · app = α_ MX MX MX · id MX #⊗ app · app.
+Proof.
+  pose (idMX_app_app_is_it := pr2 it3_ipi (id MX #⊗ app · app,, idMX_app_app_as_it3)).
+  pose (αinv_MXMXMX_app_idMX_app_is_it := pr2 it3_ipi (αinv_ MX MX MX · app #⊗ id MX · app,, αinv_MXMXMX_app_idMX_app_as_it3)).
+  rewrite <- αinv_MXMXMX_app_idMX_app_is_it in idMX_app_app_is_it.
+  pose (mapped := maponpaths pr1 idMX_app_app_is_it).
+  simpl in mapped.
+  pose (mapped' := maponpaths (λ x, α_ MX MX MX · x) mapped).
+  simpl in mapped'.
+  repeat rewrite assoc in mapped'.
+  force (mapped' : (α_ MX MX MX · # tensor (id MX #, app) · app = α_ MX MX MX · αinv_ MX MX MX · # tensor (app #, id MX) · app)).
+  rewrite <- α_iso_cancel in mapped'.
+  symmetry.
+  rewrite id_left in mapped'.
+  exact mapped'.
 Defined.
 
 End Parameterised_Initiality.
