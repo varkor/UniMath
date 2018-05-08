@@ -1,23 +1,11 @@
 Require Import UniMath.Foundations.PartD.
-(* Require Import UniMath.Foundations.Sets. *)
 Require Import UniMath.CategoryTheory.Categories.
-(* Require Import UniMath.CategoryTheory.categories.category_hset. *)
-(* Require Import UniMath.CategoryTheory.categories.category_hset_structures. *)
-(* Require Import UniMath.CategoryTheory.functor_categories. *)
-(* Require Import UniMath.CategoryTheory.ProductCategory. *)
-(* Require Import UniMath.CategoryTheory.PrecategoryBinProduct. *)
 Require Import UniMath.CategoryTheory.CocontFunctors.
-(* Require Import UniMath.CategoryTheory.whiskering. *)
 Require Import UniMath.CategoryTheory.FunctorAlgebras.
 Require Import UniMath.CategoryTheory.limits.bincoproducts.
-(* Require Import UniMath.CategoryTheory.limits.binproducts. *)
 Require Import UniMath.CategoryTheory.limits.graphs.colimits.
 Require Import UniMath.CategoryTheory.limits.initial.
-(* Require Import UniMath.SubstitutionSystems.Signatures. *)
-(* Require Import UniMath.SubstitutionSystems.BindingSigToMonad. *)
-(* Require Import UniMath.SubstitutionSystems.LamFromBindingSig. *)
-(* Require Import UniMath.SubstitutionSystems.LiftingInitial_alt. *)
-(* Require Import UniMath.MetaSubstitutionSystems.MetaSubstitutionSystem. *)
+Require Import UniMath.MetaSubstitutionSystems.ForceTactic.
 
 Local Open Scope cat.
 
@@ -504,10 +492,6 @@ Proof.
 	Defined.
 	exact (monoid_ρ_law_1_2' ρ_nat_law st_id_φ).
 Defined.
-
-Tactic Notation "force" "(" ident(name) ":" constr(type) ")" := assert (name' : type) by (exact name);
-  clear name;
-  rename name' into name.
 
 Definition monoid_ρ_law_1_3 : α #⊗ id I · ρ_ MX = (α_ X MX I) · id X #⊗ ρ_ MX · α.
   pose (ρ_nat_law := pr2 ρ' (X ⊗ MX) MX α).
