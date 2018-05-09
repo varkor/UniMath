@@ -41,6 +41,11 @@ Proof.
   induction x; reflexivity.
 Defined.
 
+Definition binprod_proj_id {C D : precategory} (cd : C ⊠ D) (b : bool) : (id cd) b = id cd b.
+Proof.
+  reflexivity.
+Defined.
+
 Definition binprod_comp {C D : precategory} (c c' c'' : C) (d d' d'' : D) (f : c --> c') (f' : c' --> c'') (g : d --> d') (g' : d' --> d'') : (f · f' #, g · g') = (f #, g) · (f' #, g').
 Proof.
   apply funextsec.
@@ -48,7 +53,7 @@ Proof.
   induction x; reflexivity.
 Defined.
 
-Definition zah {C D : precategory} (cd : C ⊠ D) (b : bool) : ((id cd) b = id (cd b)).
+Definition binprod_proj_comp {C D : precategory} {cd cd' cd'' : C ⊠ D} (f : cd --> cd') (g : cd' --> cd'') (b : bool) : (f · g) b = f b · g b.
 Proof.
   reflexivity.
 Defined.
@@ -163,23 +168,21 @@ Proof.
   - split.
     + intro a.
       simpl.
-      assert (rephrase : # tensor (# tensor (id (a true true) #, id (a true false)) #, id (a false)) = id ((a true true ⊗ a true false) ⊗ a false)).
+      repeat rewrite (binprod_proj_id a); repeat rewrite binprod_proj_id.
       rewrite binprod_id.
       rewrite (functor_id tensor).
       rewrite binprod_id.
       rewrite (functor_id tensor).
       reflexivity.
-      assumption.
     + unfold functor_compax.
       simpl.
       intros a b c f g.
-      assert (rephase : # tensor (# tensor ((f true true · g true true) #, (f true false · g true false)) #, (f false · g false)) = # tensor (# tensor (f true true #, f true false) #, f false) · # tensor (# tensor (g true true #, g true false) #, g false)).
+      repeat rewrite (binprod_proj_comp f); repeat rewrite binprod_proj_comp.
       rewrite binprod_comp.
       rewrite (functor_comp tensor).
       rewrite binprod_comp.
       rewrite (functor_comp tensor).
       reflexivity.
-      assumption.
 Defined.
 
 (* - ⊗ (= ⊗ ≡) *)
@@ -193,23 +196,21 @@ Proof.
   - split.
     + intro a.
       simpl.
-      assert (rephrase : # tensor (id a true true #, # tensor (id a true false #, id a false)) = id (a true true ⊗ (a true false ⊗ a false))).
+      repeat rewrite (binprod_proj_id a); repeat rewrite binprod_proj_id.
       rewrite binprod_id.
       rewrite (functor_id tensor).
       rewrite binprod_id.
       rewrite (functor_id tensor).
       reflexivity.
-      assumption.
     + unfold functor_compax.
       simpl.
       intros a b c f g.
-      assert (rephase : # tensor ((f true true · g true true) #, # tensor ((f true false · g true false) #, (f false · g false))) = # tensor (f true true #, # tensor (f true false #, f false)) · # tensor (g true true #, # tensor (g true false #, g false))).
+      repeat rewrite (binprod_proj_comp f); repeat rewrite binprod_proj_comp.
       rewrite binprod_comp.
       rewrite (functor_comp tensor).
       rewrite binprod_comp.
       rewrite (functor_comp tensor).
       reflexivity.
-      assumption.
 Defined.
 
 (* α *)
@@ -249,7 +250,10 @@ Definition monoidal_precat_right_unitor := pr1 (pr2 (pr2 (pr2 (pr2 M)))).
 
 Definition monoidal_precat_associator := pr1 (pr2 (pr2 (pr2 (pr2 (pr2 M))))).
 
+Definition monoidal_precat_eq := pr2 (pr2 (pr2 (pr2 (pr2 (pr2 M))))).
+
 End Monoidal_Precat_Accessors.
 
 Definition strict_monoidal_precat : UU :=
   ∑ M : monoidal_precat, is_strict (monoidal_precat_precat M) (monoidal_precat_tensor M) (monoidal_precat_unit M) (monoidal_precat_left_unitor M) (monoidal_precat_right_unitor M) (monoidal_precat_associator M).
+

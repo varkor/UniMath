@@ -1,10 +1,11 @@
 Require Import UniMath.Foundations.PartD. (* for ∑ *)
 Require Import UniMath.CategoryTheory.Categories. (* for precategory *)
 Require Import UniMath.CategoryTheory.functor_categories. (* for functor *)
-Require Import UniMath.CategoryTheory.Monoidal. (* for binprod_precat *)
+Require Import UniMath.MetaSubstitutionSystems.Monoidal2. (* for binprod_precat *)
 Require Import UniMath.CategoryTheory.ProductCategory. (* for has_homsets_product_precategory *)
 Require Import UniMath.CategoryTheory.limits.initial. (* for Initial *)
 Require Import UniMath.CategoryTheory.FunctorAlgebras. (* for FunctorAlg *)
+Require Import UniMath.MetaSubstitutionSystems.ForceTactic. (* for force, force_goal *)
 
 Local Open Scope cat.
 
@@ -132,19 +133,19 @@ Definition F_D (d : D) : functor C C.
 Proof.
   use tpair.
   - use tpair.
-    exact (λ c, F (binprod_precat_pair_of_el d c)).
+    exact (λ c, F (binprod_ob d c)).
     intros ? ? f.
-    exact (# F (binprod_precat_pair_of_mor (identity d) f)).
+    exact (# F (binprod_mor (identity d) f)).
   - split.
     + intro.
       simpl.
-      rewrite <- id_on_binprod_precat_pair_of_el.
+      rewrite binprod_id.
       apply functor_id.
     + unfold functor_compax.
       intros.
       replace (identity d) with (identity d · identity d).
       simpl.
-      rewrite <- binprod_precat_comp.
+      rewrite binprod_comp.
       rewrite id_left.
       apply (pr2 (pr2 F)).
       rewrite id_left.
@@ -155,83 +156,110 @@ Context (hs_C : has_homsets C).
 
 Check ParameterisedFunctorAlg F hs_C.
 
+Context (μF_ : ∏ d : D, Initial (FunctorAlg (F_D d) hs_C)).
+
+Definition μF_on_ob : ob D -> ob C.
+Proof.
+  exact (λ d, pr1 (pr1 (μF_ d))).
+Defined.
+
 (* Ideally, I'd inline this with a "transparent assert", but that doesn't exist, so... *)
-Lemma μF_d'_as_F_ (d d' : D) (f : D ⟦ d, d' ⟧) (μF_ : ∏ d : D, Initial (FunctorAlg (F_D d) hs_C)) : FunctorAlg (F_D d) hs_C.
+Lemma μF_d'_as_F_ {d d' : D} (f : D ⟦ d, d' ⟧) : FunctorAlg (F_D d) hs_C.
 Proof.
   pose (μF_d' := InitialObject (μF_ d')).
   exists (pr1 μF_d').
-  exact (#F (binprod_precat_pair_of_mor f (identity (pr1 (μF_d')))) · pr2 μF_d').
+  (* From F(D, μF(D')) --> F(D', μF(D')) --> μF(D'). *)
+  exact (#F (binprod_mor f (identity (pr1 (μF_d')))) · pr2 μF_d').
 Defined.
 
-(* Yet another trivial lemma extracted for Coq. *)
-Lemma id_eq_lower (d : D) (alg : FunctorAlg (F_D d) hs_C) (f : alg --> alg) (eq_id : identity alg = f) : (identity (pr1 alg) = pr1 f).
+Definition μF_on_alg_mor {d d' : D} (f : d --> d') : pr1 (μF_ d) --> μF_d'_as_F_ f.
 Proof.
-  rewrite <- eq_id.
-  reflexivity.
+  exact (pr1 ((pr2 (μF_ d)) (μF_d'_as_F_ f))).
 Defined.
 
-(* pr1 (pr1 (pr2 (μF_ d) (pr1 (μF_ d''),, # F (f · g #, identity (pr1 (μF_ d''))) · pr2 (μF_ d'')))) *)
-
-(* Lemma gloog (μF_ : ∏ d : D, Initial (FunctorAlg (F_D d) hs_C)) (d d' d'' : D) (f : D ⟦ d, d' ⟧) (g : D ⟦ d', d'' ⟧) : FunctorAlg (F_D d) hs_C.
+Definition μF_on_mor : ∏ d d' : ob D, d --> d' -> μF_on_ob d --> μF_on_ob d'.
 Proof.
-  exists (pr1 (pr1 (μF_ d''))).
-  exact ((# F (f · g #, (identity (pr1 (pr1 (μF_ d'')))) · (identity (pr1 (pr1 (μF_ d'')))))) · pr2 (pr1 (μF_ d''))).
+  intros ? ? f.
+  exact (pr1 (μF_on_alg_mor f)).
 Defined.
 
-Lemma snoot (μF_ : ∏ d : D, Initial (FunctorAlg (F_D d) hs_C)) (d d' d'' : D) (f : D ⟦ d, d' ⟧) (g : D ⟦ d', d'' ⟧) : UU.
+Definition μF_data : functor_data D C :=
+  functor_data_constr D C μF_on_ob μF_on_mor.
+
+(* Definition dooom {d : D} : μF_d'_as_F_ (id d) = pr1 (μF_ d).
 Proof.
-
-  pose (WHY := pr1 (pr1 (pr2 (μF_ d) (gloog μF_ d d' d'' f g)))). (* lhs *)
-  unfold gloog in WHY.
-  simpl in WHY.
-  rewrite <- (binprod_precat_comp f (identity (pr1 (pr1 (μF_ d'')))) g (identity (pr1 (pr1 (μF_ d''))))).
-  rewrite <- binprod_precat_comp in WHY.
-  rewrite <- assoc in WHY.
-
-  Check functor_comp F.
-  replace (identity (pr1 (pr1 (μF_ d'')))) with ((identity (pr1 (pr1 (μF_ d'')))) · (identity (pr1 (pr1 (μF_ d''))))) in WHY.
-
-  (* Check # F (f · g #, identity (pr1 (pr1 (μF_ d'')))).
-  Check pr1 (μF_ d'').
-  Check pr2 (μF_ d).
-  pose (L := pr2 (μF_ d)).
+  pose (Z := μF_d'_as_F_ (id d)).
+  unfold μF_d'_as_F_ in Z.
+  pose (L := pr2 (pr1 (μF_ d))).
   simpl in L.
-  unfold isInitial in L.
-  Check pr1 (pr1 (μF_ d'')),, # F (f · g #, identity (pr1 (pr1 (μF_ d'')))). *)
+  Check pr2 (μF_ d) .
+  rewrite binprod_id in Z.
+  rewrite functor_id in Z.
 
-  Check
 
-  pr1 (pr1 (pr2 (μF_ d) (pr1 (μF_ d''),, # F (f · g #, identity (pr1 (μF_ d''))) · pr2 (μF_ d'')))).
+  rewrite binprod_id in Z.
+  Check .
+  Check pr1 (μF_ d).
+  pose (contr := pr2 (μF_ d) (μF_d'_as_F_ (id d))).
+  unfold μF_d'_as_F_.
+  apply tpair.
+  unfold parameterised_algebra_carrier.
+  reflexivity
+Admitted.
 
+Definition μF_d'_as_F_id {d : D} (f : pr1 (μF_ d) --> μF_d'_as_F_ (identity d)) : pr1 (μF_ d) --> pr1 (μF_ d).
+Proof.
+  rewrite dooom.
+  unfold μF_d'_as_F_ in f.
+  rewrite binprod_id in f.
+  rewrite functor_id in f.
 
 Admitted.
 
-(* Lemma snoot (μF_ : ∏ d : D, Initial (FunctorAlg (F_D d) hs_C)) (d d' d'' : D) (f : D ⟦ d, d' ⟧) (g : D ⟦ d', d'' ⟧) (Z : pr1 (pr1 (pr2 (μF_ d) (pr1 (μF_ d''),, # F (f · g #, identity (pr1 (pr1 (μF_ d'')))) · pr2 (pr1 (μF_ d'')))))) : (pr1 (pr1 (pr2 (μF_ d) (pr1 (μF_ d''),, # F (f · g #, identity (pr1 (μF_ d''))) · pr2 (μF_ d''))))). *)
-
-Definition μF (μF_ : ∏ d : D, Initial (FunctorAlg (F_D d) hs_C)) : functor D C.
+Definition μF_idax : functor_idax μF_data.
 Proof.
-  use tpair.
-  - exists (λ d, pr1 (pr1 (μF_ d))).
-    intros d d' f.
-    exact (pr1 (pr1 ((pr2 (μF_ d)) (μF_d'_as_F_ d d' f μF_)))).
-  - use tpair.
-    intro d.
-    unfold μF_d'_as_F_.
-    simpl.
-    rewrite <- id_on_binprod_precat_pair_of_el.
-    rewrite (functor_id F).
-    rewrite id_left.
-    assert (id_eq : pr1 (pr1 (pr2 (μF_ d) (pr1 (μF_ d)))) = identity (pr1 (pr1 (μF_ d)))); [| exact id_eq].
-    + pose (eq_id := pr2 (pr2 (μF_ d) (μF_ d)) (identity ((pr1 (μF_ d))))).
-      symmetry.
-      exact (id_eq_lower d (pr1 (μF_ d)) (pr1 (pr2 (μF_ d) (μF_ d))) eq_id).
-    + unfold functor_compax.
-      intros d d' d'' f g.
-      unfold μF_d'_as_F_.
-      simpl.
-      replace (# F (f · g #, identity (pr1 (pr1 (μF_ d''))))) with (# F (f · g #, identity (pr1 (pr1 (μF_ d''))) · identity (pr1 (pr1 (μF_ d''))))).
+  intro d.
+  unfold μF_data, μF_on_ob, μF_on_mor, μF_on_alg_mor, μF_d'_as_F_.
+  simpl.
+  (* pr1 (μF_on_alg_mor d d (identity d)) = identity (pr1 (pr1 (μF_ d))) *)
+  rewrite binprod_id.
+  rewrite (functor_id F).
+  rewrite id_left.
+  force_goal (pr1 (pr1 (pr2 (μF_ d) (pr1 (μF_ d)))) = identity (pr1 (pr1 (μF_ d)))).
+  pose (Z := pr1 (pr2 (μF_ d) (pr1 (μF_ d)))).
+  pose (mor_is_contr := pr2 (pr2 (μF_ d) (pr1 (μF_ d)))).
+  pose (lhs := μF_d'_as_F_id (μF_on_alg_mor (identity d))).
+  pose (rhs := identity (pr1 (μF_ d))).
+  assert (lhs_eq_rhs : lhs = rhs) by (
+    rewrite (mor_is_contr lhs);
+    rewrite (mor_is_contr rhs);
+    reflexivity).
+  unfold lhs, rhs in lhs_eq_rhs.
+  unfold μF_on_alg_mor in lhs_eq_rhs.
+  exact lhs_eq_rhs.
+Admitted.
 
-    admit.
-Admitted. *)
+Definition μF_compax : functor_compax μF_data.
+Proof.
+  intros d d' d'' f g.
+  unfold μF_data, functor_data_constr, μF_on_mor, μF_d'_as_F_.
+  cbn.
+  assert (z1 : (μF_on_mor d d' f) · (μF_on_mor d' d'' g) = (μF_on_mor d d' f) · (μF_on_mor d' d'' g)) by reflexivity.
+  unfold μF_on_mor, μF_d'_as_F_ in z1.
+  simpl in z1.
+  Check pr2 (μF_ d).
+  (* rewrite <- (id_left (identity (pr1 (μF_ d'')))). *)
+  (* rewrite <- id_on_binprod_precat_pair_of_el.
+  rewrite <- (binprod_precat_comp).
+  transitivity (#F ((#F (f true true #, f true false)  #, f false) · (#F (g true true #, g true false) #, g false))).
+  - rewrite (functor_comp F).
+    rewrite <- (binprod_precat_comp).
+    reflexivity.
+  - apply (functor_comp F). *)
+Admitted.
+
+Definition is_functor_μF_data : is_functor μF_data := dirprodpair μF_idax μF_compax.
+
+Definition μF : functor D C := tpair _ μF_data is_functor_μF_data. *)
 
 End Parameterised_InitialAlgebra_Functor.

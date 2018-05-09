@@ -2,6 +2,10 @@
 
 Require Import UniMath.MoreFoundations.Foundations.
 
-Tactic Notation "force" "(" ident(name) ":" constr(type) ")" := assert (name' : type) by (exact name);
+Tactic Notation "force" "(" ident(name) ":" constr(type) ")" :=
+  assert (name' : type) by (exact name);
   clear name;
   rename name' into name.
+
+Tactic Notation "force_goal" constr(type) :=
+  assert (goal' : type); [| exact goal'].

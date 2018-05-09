@@ -340,6 +340,8 @@ The packages and files are listed here in logical order: each file depends only 
    - [All.v](SubstitutionSystems/All.v)
 ## Package MetaSubstitutionSystems
    - [ForceTactic.v](MetaSubstitutionSystems/ForceTactic.v)
+   - [Monoidal2.v](MetaSubstitutionSystems/Monoidal2.v)
+   - [CosliceMonoidal.v](MetaSubstitutionSystems/CosliceMonoidal.v)
    - [ParameterisedFunctorAlgebras.v](MetaSubstitutionSystems/ParameterisedFunctorAlgebras.v)
    - [ActionsAndStrengths.v](MetaSubstitutionSystems/ActionsAndStrengths.v)
    - [SecondOrderAbstractSyntax.v](MetaSubstitutionSystems/SecondOrderAbstractSyntax.v)

@@ -1,8 +1,8 @@
 Require Import UniMath.Foundations.PartD. (* for ∑ *)
 Require Import UniMath.CategoryTheory.Categories. (* for precategory *)
 Require Import UniMath.CategoryTheory.functor_categories. (* for functor *)
-Require Import UniMath.CategoryTheory.Monoidal. (* for binprod_precat *)
-Require Import UniMath.CategoryTheory.UnderCategories. (* for UnderCategory *)
+Require Import UniMath.MetaSubstitutionSystems.Monoidal2. (* for binprod_precat *)
+Require Import UniMath.MetaSubstitutionSystems.ForceTactic. (* for force and force_goal *)
 
 Local Open Scope cat.
 
@@ -12,8 +12,8 @@ Context (C : precategory) (A : C).
 
 Definition coslice_ob : UU := ∑ X : C, A --> X.
 
-Notation "⌑ S" := (pr1 S) (at level 26).
-Notation "↓ S" := (pr2 S) (at level 26).
+Notation "⌑ S" := (pr1 (S : coslice_ob)) (at level 26).
+Notation "↓ S" := (pr2 (S : coslice_ob)) (at level 26).
 
 Definition is_coslice_mor (S S' : coslice_ob) (f : ⌑S --> ⌑S') : UU :=
   ↓S · f = ↓S'.
@@ -21,8 +21,8 @@ Definition is_coslice_mor (S S' : coslice_ob) (f : ⌑S --> ⌑S') : UU :=
 Definition coslice_mor (S S' : coslice_ob) : UU :=
   ∑ f : ⌑S --> ⌑S', is_coslice_mor S S' f.
 
-Notation "⊸ f" := (pr1 f) (at level 26).
-Notation "△ f" := (pr2 f) (at level 26).
+Notation "⊸ f" := (pr1 (f : coslice_mor _ _)) (at level 26).
+Notation "△ f" := (pr2 (f : coslice_mor _ _)) (at level 26).
 
 Definition isaset_coslice_mor (hs : has_homsets C) (S S' : coslice_ob) : isaset (coslice_mor S S').
 Proof.
@@ -96,65 +96,100 @@ End Coslice_Precat_Definition.
 
 Context (Mon : monoidal_precat).
 
-Let V := monoidal_precat_to_precat Mon.
-Let I := monoidal_precat_to_unit Mon.
-Notation "X ⊗ Y" := ((monoidal_precat_to_tensor Mon) (X , Y)) (at level 31).
-Notation "f #⊗ g" := (#(monoidal_precat_to_tensor Mon) (f #, g)) (at level 31).
-Let α := monoidal_precat_to_associator Mon.
-Let λ' := monoidal_precat_to_left_unitor Mon.
-Let ρ := monoidal_precat_to_right_unitor Mon.
-
-Definition tensor := monoidal_precat_to_tensor Mon.
+Let V := monoidal_precat_precat Mon.
+Let I := monoidal_precat_unit Mon.
+Let tensor := monoidal_precat_tensor Mon.
+Let α' := monoidal_precat_associator Mon.
+Let λ' := monoidal_precat_left_unitor Mon.
+Let ρ' := monoidal_precat_right_unitor Mon.
+Notation "X ⊗ Y" := (tensor (X , Y)) (at level 31).
+Notation "f #⊗ g" := (#tensor (f #, g)) (at level 31).
 
 Context (hs_V : has_homsets V).
 
-Let coslice_precat := Undercategory V hs_V I.
+Let coslice_precat := precategory_Coslice V I hs_V.
+
+Notation "⌑ S" := (pr1 (S : coslice_precat)) (at level 26).
+Notation "↓ S" := (pr2 (S : coslice_precat)) (at level 26).
+Notation "⊸ f" := (pr1 (f : coslice_mor V I _ _)) (at level 26).
+Notation "△ f" := (pr2 (f : coslice_mor V I _ _)) (at level 26).
 
 Section Coslice_Monoidal.
 
-(* Another useless lemma that's only necessary because Coq can't unify anything. *)
-Lemma precomp_eq {C : precategory} {X Y Z : C} (f : X --> Y) (g g' : Y --> Z) (eq : g = g') : (f · g = f · g').
+Definition coslice_precat_sq := coslice_precat ⊠ coslice_precat.
+
+Definition I_to_II : I --> I ⊗ I.
 Proof.
+  exact (nat_iso_to_trans_inv λ' I).
+Qed.
+
+Notation "⌊ XY" := (((XY : coslice_precat_sq) true) : coslice_precat) (at level 24).
+Notation "XY ⌋" := (((XY : coslice_precat_sq) false) : coslice_precat) (at level 24).
+Notation "#⌊ fg" := (fg true) (at level 24).
+Notation "fg ⌋#" := (fg false) (at level 24).
+
+Definition coslice_tensor_on_ob : ob coslice_precat_sq -> ob coslice_precat.
+Proof.
+  (* the map on objects and their morphisms from I *)
+  intro xy.
+  exists (⌑⌊xy ⊗ ⌑xy⌋).
+  exact (I_to_II · ↓⌊xy #⊗ ↓xy⌋).
+Defined.
+
+Lemma precomp_eq {C : precategory} {X Y Z : C} (f : X --> Y) (g g' : Y --> Z) (eq : g = g') : (f · g = f · g').
   rewrite eq.
   reflexivity.
 Defined.
 
-Definition coslice_tensor : functor (binprod_precat coslice_precat coslice_precat) coslice_precat.
+Definition coslice_tensor_on_mor : ∏ xy x'y' : ob coslice_precat_sq, xy --> x'y' -> coslice_tensor_on_ob xy --> coslice_tensor_on_ob x'y'.
 Proof.
-  use tpair; [use tpair |].
-  - intro xy. (* the map on objects and their morphisms from I *)
-    pose (x := pr1 (xy true)).
-    pose (y := pr1 (xy false)).
-    pose (ux := pr2 (xy true)).
-    pose (uy := pr2 (xy false)).
-    exists (x ⊗ y).
-    exact (inv_from_iso (pr1 λ' I) · ux #⊗ uy).
-  - (* the map on morphisms *)
-    intros xy x'y' fg.
-    pose (ux := pr2 (xy true)).
-    pose (uy := pr2 (xy false)).
-    pose (f := pr1 (fg true)).
-    pose (g := pr1 (fg false)).
-    exists (f #⊗ g).
-    simpl.
-    rewrite <- assoc.
-    assert (suffix_eq : (# (monoidal_precat_to_tensor Mon) (pr2 (xy true) #, pr2 (xy false)) · # (monoidal_precat_to_tensor Mon) (f #, g)) = # (monoidal_precat_to_tensor Mon) (pr2 (x'y' true) #, pr2 (x'y' false))).
-    rewrite <- functor_comp.
-    rewrite binprod_precat_comp.
-    pose (eq_f := (pr2 (fg true))).
-    pose (eq_g := (pr2 (fg false))).
-    unfold Under_ob_mor in eq_f, eq_g.
-    rewrite <- eq_f, <- eq_g.
-    reflexivity.
-    exact (precomp_eq (inv_from_iso (pr1 λ' I)) (# (monoidal_precat_to_tensor Mon) (pr2 (xy true) #, pr2 (xy false)) · # (monoidal_precat_to_tensor Mon) (f #, g)) (# (monoidal_precat_to_tensor Mon) (pr2 (x'y' true) #, pr2 (x'y' false))) suffix_eq).
-  - (* functorality *)
-    use tpair.
-    + intro xy.
-      (* 1_x #⊗ 1_y = 1_(x ⊗ y) *)
-      admit.
-    + intros xy x'y' x''y'' f g.
-      rewrite binprod_precat_comp.
+  (* the map on morphisms *)
+  intros xy x'y' fg.
+  exists (⊸#⌊fg #⊗ ⊸fg⌋#).
+  simpl.
+  unfold is_coslice_mor, coslice_tensor_on_ob.
+  simpl.
+  rewrite <- assoc.
+  force_goal (I_to_II · (# tensor (pr2 (#⌊ xy) #, pr2 (xy ⌋#)) · # tensor (pr1 (#⌊ fg) #, pr1 (fg ⌋#))) = I_to_II · # tensor (pr2 (#⌊ x'y') #, pr2 (x'y' ⌋#))).
+  rewrite <- functor_comp.
+  rewrite <- binprod_comp.
+  rewrite <- (△#⌊fg), <- (△fg⌋#).
+  reflexivity.
+Defined.
+
+Definition coslice_tensor_data : functor_data coslice_precat_sq coslice_precat :=
+  functor_data_constr coslice_precat_sq coslice_precat coslice_tensor_on_ob coslice_tensor_on_mor.
+
+(* Definition mk_sobb (z : ∑ y, V ⟦ I, y ⟧) : coslice_precat.
+  exact z.
+Defined.
+
+Definition coslice_tensor_idax : functor_idax coslice_tensor_data.
+Proof.
+  intro xy.
+  simpl.
+  apply funcontrtwice.
+  intros.
+  refine (iscontraprop1 _ _).
+  exact (isaset_coslice_mor V I hs_V (coslice_tensor_on_ob xy) (coslice_tensor_on_ob xy) x x').
+  induction x, x'.
+  use tpair.
+  apply iscontr_hProp.
+  induction x, x'.
+  apply iscontr_uniqueness.
+  induction x.
+  induction x'.
+  unfold coslice_tensor_on_ob.
+  force_goal (coslice_tensor_on_mor xy xy (id xy) = id mk_sobb (⌑⌊xy ⊗ ⌑xy⌋,, I_to_II · ↓⌊xy #⊗ ↓xy⌋)).
+  simpl.
 Admitted.
+
+Definition coslice_tensor_compax : functor_compax coslice_tensor_data.
+Admitted.
+
+Definition is_functor_coslice_tensor_data : is_functor coslice_tensor_data := dirprodpair coslice_tensor_idax coslice_tensor_compax.
+
+Definition coslice_tensor : functor coslice_precat_sq coslice_precat := tpair _ coslice_tensor_data is_functor_coslice_tensor_data.
 
 Definition coslice_associator : associator coslice_precat coslice_tensor.
 Proof. Admitted.
@@ -188,7 +223,7 @@ Proof.
     exact coslice_triangle_eq.
 Defined.
 
-End Coslice_Monoidal.
+*) End Coslice_Monoidal.
 
 Section Coslice_Forgetful_Functor.
 

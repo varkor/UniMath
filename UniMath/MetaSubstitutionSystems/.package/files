@@ -1,4 +1,6 @@
 ForceTactic.v
+Monoidal2.v
+CosliceMonoidal.v
 ParameterisedFunctorAlgebras.v
 ActionsAndStrengths.v
 SecondOrderAbstractSyntax.v
