@@ -1,7 +1,7 @@
 Require Import UniMath.Foundations.PartD. (* for ∑ *)
 Require Import UniMath.CategoryTheory.Categories. (* for precategory *)
 Require Import UniMath.CategoryTheory.functor_categories. (* for functor *)
-Require Import UniMath.MetaSubstitutionSystems.Monoidal2. (* for binprod_precat *)
+Require Import UniMath.MetaSubstitutionSystems.Monoidal. (* for binprod_precat *)
 Require Import UniMath.CategoryTheory.limits.binproducts. (* for BinProducts *)
 Require Import UniMath.MetaSubstitutionSystems.CosliceMonoidal. (* for precategory_coslice *)
 Require Import UniMath.MetaSubstitutionSystems.ForceTactic. (* for force_goal *)
@@ -221,14 +221,14 @@ Definition tensorial_strength := strength tensorial_action tensorial_action.
 
 Context (bin_product : BinProducts V).
 
-Definition cartesian_action : action.
+(*Definition cartesian_action : action.
 Proof.
   exists V.
   Check binproduct_functor bin_product. (* needs to be our version of binary product categories *)
 Admitted.
 
 (* F(A) × B --> F(A × B) *)
-Definition cartesian_strength := strength cartesian_action cartesian_action.
+Definition cartesian_strength := strength cartesian_action cartesian_action.*)
 
 End Homogeneous_Strengths.
 
@@ -271,44 +271,47 @@ use tpair.
     reflexivity.
 Defined.
 
-Definition U_action : action.
+(*Definition U_action : action.
 Proof.
   exists A.
   exists otimes_U_functor.
   (* K ⊗ U I_C -- (1_K ⊗ ϵ^{-1} · λ_D K) --> K *)
   use tpair.
   - (* ρ *)
-  unfold action_right_unitor.
-  unfold nat_iso.
-  use tpair.
-  unfold nat_trans.
-  pose (ϵ := pr1 (pr2 (pr1 U))).
-  pose (ϵ_inv := inv_from_iso (mk_iso ϵ (pr1 (pr2 U)))).
-  use tpair.
-  intro.
-  exact (id x #⊗_A ϵ_inv · pr1 ρ_A x). (* ϱ *)
-  intros x x' f.
-  pose (ρ_nat_law := pr2 (pr1 ρ_A) x x' f).
-  simpl; simpl in ρ_nat_law.
-  assert (ϵ_coher : id x #⊗_A ϵ_inv · f #⊗_A id I_A = f #⊗_A (#U (id I)) · id x' #⊗_A ϵ_inv).
-  - do 2 rewrite <- functor_comp.
-    do 2 rewrite <- binprod_comp.
-    rewrite functor_id.
-    do 2 (rewrite id_left; rewrite id_right).
-    reflexivity.
-  - rewrite assoc.
-    force (ϵ_coher : (# tensor_A (id x #, ϵ_inv) · # tensor_A (f #, id I_A) = # tensor_A (f #, # U (id I)) · # tensor_A (id x' #, ϵ_inv))).
-    force_goal (# tensor_A (f #, # U (id I)) · # tensor_A (id x' #, ϵ_inv) · (pr1 ρ_A) x' = # tensor_A (id x #, ϵ_inv) · (pr1 ρ_A) x · f).
-   rewrite <- ϵ_coher.
-   repeat rewrite <- assoc.
-   force_goal (# tensor_A (id x #, ϵ_inv) · (# tensor_A (f #, id I_A) · (pr1 ρ_A) x') = # tensor_A (id x #, ϵ_inv) · (pr1 (pr1 ρ_A) x · f)).
-   force (ρ_nat_law : (# (pr1 (pr2 Mon_A)) (f #, id pr1 (pr2 (pr2 Mon_A))) · pr1 (pr1 ρ_A) x' = pr1 (pr1 ρ_A) x · f)).
-    rewrite <- ρ_nat_law.
-    reflexivity.
-  - intro.
-  exists ρ'.
-  exists α'.
-  exact (monoidal_precat_eq Mon_V).
-Defined.
+    unfold action_right_unitor.
+    unfold nat_iso.
+    use tpair.
+    unfold nat_trans.
+    pose (ϵ := pr1 (pr2 (pr1 U))).
+    pose (ϵ_inv := inv_from_iso (mk_iso (pr1 (pr2 U)))).
+    use tpair.
+    intro.
+    exact (id x #⊗_A ϵ_inv · pr1 ρ_A x). (* ϱ *)
+    intros x x' f.
+    pose (ρ_nat_law := pr2 (pr1 ρ_A) x x' f).
+    simpl; simpl in ρ_nat_law.
+    assert (ϵ_coher : id x #⊗_A ϵ_inv · f #⊗_A id I_A = f #⊗_A (#U (id I)) · id x' #⊗_A ϵ_inv).
+    + do 2 rewrite <- functor_comp.
+      do 2 rewrite <- binprod_comp.
+      rewrite functor_id.
+      do 2 (rewrite id_left; rewrite id_right).
+      reflexivity.
+    + rewrite assoc.
+      force (ϵ_coher : (# tensor_A (id x #, ϵ_inv) · # tensor_A (f #, id I_A) = # tensor_A (f #, # U (id I)) · # tensor_A (id x' #, ϵ_inv))).
+      force_goal (# tensor_A (f #, # U (id I)) · # tensor_A (id x' #, ϵ_inv) · (pr1 ρ_A) x' = # tensor_A (id x #, ϵ_inv) · (pr1 ρ_A) x · f).
+      rewrite <- ϵ_coher.
+      repeat rewrite <- assoc.
+      force_goal (# tensor_A (id x #, ϵ_inv) · (# tensor_A (f #, id I_A) · (pr1 ρ_A) x') = # tensor_A (id x #, ϵ_inv) · (pr1 (pr1 ρ_A) x · f)).
+      force (ρ_nat_law : (# (pr1 (pr2 Mon_A)) (f #, id pr1 (pr2 (pr2 Mon_A))) · pr1 (pr1 ρ_A) x' = pr1 (pr1 ρ_A) x · f)).
+      rewrite <- ρ_nat_law.
+      reflexivity.
+    +
+      intro.
+      admit.
+    -
+      exists ρ'.
+      exists α'.
+      exact (monoidal_precat_eq Mon_V).
+Defined.*)
 
 End Strong_Monoidal_Functor_Action.

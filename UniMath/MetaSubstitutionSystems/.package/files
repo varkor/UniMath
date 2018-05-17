@@ -1,5 +1,5 @@
 ForceTactic.v
-Monoidal2.v
+Monoidal.v
 CosliceMonoidal.v
 ParameterisedFunctorAlgebras.v
 ActionsAndStrengths.v

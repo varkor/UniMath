@@ -1,7 +1,7 @@
 Require Import UniMath.Foundations.PartD. (* for ∑ *)
 Require Import UniMath.CategoryTheory.Categories. (* for precategory *)
 Require Import UniMath.CategoryTheory.functor_categories. (* for functor *)
-Require Import UniMath.MetaSubstitutionSystems.Monoidal2. (* for binprod_precat *)
+Require Import UniMath.MetaSubstitutionSystems.Monoidal. (* for binprod_precat *)
 Require Import UniMath.CategoryTheory.ProductCategory. (* for has_homsets_product_precategory *)
 Require Import UniMath.CategoryTheory.limits.initial. (* for Initial *)
 Require Import UniMath.CategoryTheory.FunctorAlgebras. (* for FunctorAlg *)
@@ -153,8 +153,6 @@ Proof.
 Defined.
 
 Context (hs_C : has_homsets C).
-
-Check ParameterisedFunctorAlg F hs_C.
 
 Context (μF_ : ∏ d : D, Initial (FunctorAlg (F_D d) hs_C)).
 

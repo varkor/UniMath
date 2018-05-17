@@ -196,7 +196,6 @@ The packages and files are listed here in logical order: each file depends only 
    - [Elements.v](CategoryTheory/Elements.v)
    - [ElementsOp.v](CategoryTheory/ElementsOp.v)
    - [elems_slice_equiv.v](CategoryTheory/elems_slice_equiv.v)
-   - [Monoidal.v](CategoryTheory/Monoidal.v)
    - [Monads/Kleisli.v](CategoryTheory/Monads/Kleisli.v)
    - [Monads/KTriples.v](CategoryTheory/Monads/KTriples.v)
    - [Monads/KTriplesEquiv.v](CategoryTheory/Monads/KTriplesEquiv.v)
@@ -340,7 +339,7 @@ The packages and files are listed here in logical order: each file depends only 
    - [All.v](SubstitutionSystems/All.v)
 ## Package MetaSubstitutionSystems
    - [ForceTactic.v](MetaSubstitutionSystems/ForceTactic.v)
-   - [Monoidal2.v](MetaSubstitutionSystems/Monoidal2.v)
+   - [Monoidal.v](MetaSubstitutionSystems/Monoidal.v)
    - [CosliceMonoidal.v](MetaSubstitutionSystems/CosliceMonoidal.v)
    - [ParameterisedFunctorAlgebras.v](MetaSubstitutionSystems/ParameterisedFunctorAlgebras.v)
    - [ActionsAndStrengths.v](MetaSubstitutionSystems/ActionsAndStrengths.v)
