@@ -51,6 +51,7 @@ Definition algebra_ob : UU := ∑ X : C, F X --> X.
 *)
 Definition alg_carrier (X : algebra_ob) : C := pr1 X.
 Local Coercion alg_carrier : algebra_ob >-> ob.
+Add Printing Coercion alg_carrier.
 
 Definition alg_map (X : algebra_ob) : F X --> X := pr2 X.
 
@@ -74,6 +75,7 @@ Definition algebra_mor (X Y : algebra_ob) : UU :=
   ∑ f : X --> Y, is_algebra_mor X Y f.
 
 Coercion mor_from_algebra_mor (X Y : algebra_ob) (f : algebra_mor X Y) : X --> Y := pr1 f.
+Add Printing Coercion mor_from_algebra_mor.
 
 Definition isaset_algebra_mor (hs : has_homsets C) (X Y : algebra_ob) : isaset (algebra_mor X Y).
 Proof.

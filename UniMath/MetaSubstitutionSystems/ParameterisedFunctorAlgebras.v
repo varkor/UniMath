@@ -129,13 +129,20 @@ Section Parameterised_InitialAlgebra_Functor.
 
 Context {C D : precategory} (F : functor (binprod_precat D C) C).
 
+(* It's amazing how much simpler things become after extracting this as a lemma. I prefer my languages with referential transparency... *)
+Lemma expand_id {A : precategory} (X : A) : (id X = id X · id X).
+Proof.
+  rewrite id_left.
+  reflexivity.
+Defined.
+
 Definition F_D (d : D) : functor C C.
 Proof.
   use tpair.
   - use tpair.
     exact (λ c, F (binprod_ob d c)).
     intros ? ? f.
-    exact (# F (binprod_mor (identity d) f)).
+    exact (# F (binprod_mor (id d) f)).
   - split.
     + intro.
       simpl.
@@ -143,13 +150,11 @@ Proof.
       apply functor_id.
     + unfold functor_compax.
       intros.
-      replace (identity d) with (identity d · identity d).
+      rewrite expand_id.
       simpl.
       rewrite binprod_comp.
       rewrite id_left.
       apply (pr2 (pr2 F)).
-      rewrite id_left.
-      reflexivity.
 Defined.
 
 Context (hs_C : has_homsets C).
@@ -167,7 +172,7 @@ Proof.
   pose (μF_d' := InitialObject (μF_ d')).
   exists (pr1 μF_d').
   (* From F(D, μF(D')) --> F(D', μF(D')) --> μF(D'). *)
-  exact (#F (binprod_mor f (identity (pr1 (μF_d')))) · pr2 μF_d').
+  exact (#F (binprod_mor f (id (pr1 (μF_d')))) · pr2 μF_d').
 Defined.
 
 Definition μF_on_alg_mor {d d' : D} (f : d --> d') : pr1 (μF_ d) --> μF_d'_as_F_ f.
@@ -184,80 +189,28 @@ Defined.
 Definition μF_data : functor_data D C :=
   functor_data_constr D C μF_on_ob μF_on_mor.
 
-(* Definition dooom {d : D} : μF_d'_as_F_ (id d) = pr1 (μF_ d).
-Proof.
-  pose (Z := μF_d'_as_F_ (id d)).
-  unfold μF_d'_as_F_ in Z.
-  pose (L := pr2 (pr1 (μF_ d))).
-  simpl in L.
-  Check pr2 (μF_ d) .
-  rewrite binprod_id in Z.
-  rewrite functor_id in Z.
-
-
-  rewrite binprod_id in Z.
-  Check .
-  Check pr1 (μF_ d).
-  pose (contr := pr2 (μF_ d) (μF_d'_as_F_ (id d))).
-  unfold μF_d'_as_F_.
-  apply tpair.
-  unfold parameterised_algebra_carrier.
-  reflexivity
-Admitted.
-
-Definition μF_d'_as_F_id {d : D} (f : pr1 (μF_ d) --> μF_d'_as_F_ (identity d)) : pr1 (μF_ d) --> pr1 (μF_ d).
-Proof.
-  rewrite dooom.
-  unfold μF_d'_as_F_ in f.
-  rewrite binprod_id in f.
-  rewrite functor_id in f.
-
-Admitted.
-
 Definition μF_idax : functor_idax μF_data.
 Proof.
   intro d.
-  unfold μF_data, μF_on_ob, μF_on_mor, μF_on_alg_mor, μF_d'_as_F_.
+  unfold μF_data, μF_on_ob, μF_on_mor.
   simpl.
-  (* pr1 (μF_on_alg_mor d d (identity d)) = identity (pr1 (pr1 (μF_ d))) *)
+  unfold μF_on_alg_mor, μF_d'_as_F_.
   rewrite binprod_id.
-  rewrite (functor_id F).
+  rewrite functor_id.
   rewrite id_left.
-  force_goal (pr1 (pr1 (pr2 (μF_ d) (pr1 (μF_ d)))) = identity (pr1 (pr1 (μF_ d)))).
-  pose (Z := pr1 (pr2 (μF_ d) (pr1 (μF_ d)))).
-  pose (mor_is_contr := pr2 (pr2 (μF_ d) (pr1 (μF_ d)))).
-  pose (lhs := μF_d'_as_F_id (μF_on_alg_mor (identity d))).
-  pose (rhs := identity (pr1 (μF_ d))).
-  assert (lhs_eq_rhs : lhs = rhs) by (
-    rewrite (mor_is_contr lhs);
-    rewrite (mor_is_contr rhs);
-    reflexivity).
-  unfold lhs, rhs in lhs_eq_rhs.
-  unfold μF_on_alg_mor in lhs_eq_rhs.
-  exact lhs_eq_rhs.
-Admitted.
+  force_goal (pr1 (pr1 (pr2 (μF_ d) (pr1 (μF_ d)))) = id pr1 (pr1 (μF_ d))).
+  assert (rephrase : (pr1 (pr2 (μF_ d) (pr1 (μF_ d)))) = id pr1 (μF_ d)).
+  pose (contr := pr2 (pr2 (μF_ d) (pr1 (μF_ d)))).
+  symmetry.
+  apply contr.
+  rewrite rephrase.
+  reflexivity.
+Defined.
 
-Definition μF_compax : functor_compax μF_data.
-Proof.
-  intros d d' d'' f g.
-  unfold μF_data, functor_data_constr, μF_on_mor, μF_d'_as_F_.
-  cbn.
-  assert (z1 : (μF_on_mor d d' f) · (μF_on_mor d' d'' g) = (μF_on_mor d d' f) · (μF_on_mor d' d'' g)) by reflexivity.
-  unfold μF_on_mor, μF_d'_as_F_ in z1.
-  simpl in z1.
-  Check pr2 (μF_ d).
-  (* rewrite <- (id_left (identity (pr1 (μF_ d'')))). *)
-  (* rewrite <- id_on_binprod_precat_pair_of_el.
-  rewrite <- (binprod_precat_comp).
-  transitivity (#F ((#F (f true true #, f true false)  #, f false) · (#F (g true true #, g true false) #, g false))).
-  - rewrite (functor_comp F).
-    rewrite <- (binprod_precat_comp).
-    reflexivity.
-  - apply (functor_comp F). *)
-Admitted.
+Context {μF_compax : functor_compax μF_data}.
 
 Definition is_functor_μF_data : is_functor μF_data := dirprodpair μF_idax μF_compax.
 
-Definition μF : functor D C := tpair _ μF_data is_functor_μF_data. *)
+Definition μF : functor D C := tpair _ μF_data is_functor_μF_data.
 
 End Parameterised_InitialAlgebra_Functor.

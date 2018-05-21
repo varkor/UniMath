@@ -66,6 +66,24 @@ Proof.
   exact ii.
 Defined.
 
+(* Proof by Anthony Bordg (https://github.com/UniMath/UniMath/pull/722/files). *)
+Definition is_iso_binprod_iso {C D : precategory} {c c' : C} {d d' : D} {f : c --> c'} {g : d --> d'} (f_is_iso : is_iso f)
+  (g_is_iso : is_iso g) : is_iso (f #, g).
+Proof.
+  apply (is_iso_qinv (f #, g) (inv_from_iso (isopair f f_is_iso) #, inv_from_iso (isopair g g_is_iso))).
+  apply dirprodpair.
+  - transitivity ((isopair f f_is_iso) · (inv_from_iso (isopair f f_is_iso)) #, (isopair g g_is_iso) · (inv_from_iso (isopair g g_is_iso))).
+    + symmetry.
+      apply binprod_comp.
+    + rewrite 2 iso_inv_after_iso.
+      apply binprod_id.
+  - transitivity ((inv_from_iso (isopair f f_is_iso)) · (isopair f f_is_iso) #, (inv_from_iso (isopair g g_is_iso)) · (isopair g g_is_iso)).
+    + symmetry.
+      apply binprod_comp.
+    + rewrite 2 iso_after_iso_inv.
+      apply binprod_id.
+Defined.
+
 Definition is_nat_iso {C D : precategory} {F G : C ⟶ D} (μ : F ⟹ G) : UU :=
   ∏ (c : C), is_iso (μ c).
 
@@ -151,6 +169,12 @@ Proof.
   rewrite binprod_comp.
   rewrite (functor_comp tensor).
   reflexivity.
+Defined.
+
+Definition is_iso_tensor_iso {X Y X' Y' : C} {f : X --> Y} {g : X' --> Y'} (f_is_iso : is_iso f)
+(g_is_iso : is_iso g) : is_iso (f #⊗ g).
+Proof.
+  exact (functor_on_is_iso_is_iso (is_iso_binprod_iso f_is_iso g_is_iso)).
 Defined.
 
 (* I ⊗ - *)
@@ -393,7 +417,7 @@ Definition strong_monoidal_functor : UU :=
   ∑ L : lax_monoidal_functor,
   (is_iso (pr1 (pr2 L))) (* ϵ is an iso *)
   ×
-  (∏ (x y : C), is_iso (pr1 (pr1 (pr2 (pr2 L))) (x, y))) (* all μ_x,y are isos *).
+  (is_nat_iso (pr1 (pr2 (pr2 L)))). (* μ is an iso *)
 
 End Monoidal_Functor.
 

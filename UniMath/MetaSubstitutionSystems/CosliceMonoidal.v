@@ -1,7 +1,7 @@
 Require Import UniMath.Foundations.PartD. (* for ∑ *)
 Require Import UniMath.CategoryTheory.Categories. (* for precategory *)
 Require Import UniMath.CategoryTheory.functor_categories. (* for functor *)
-Require Import UniMath.MetaSubstitutionSystems.Monoidal2. (* for binprod_precat *)
+Require Import UniMath.MetaSubstitutionSystems.Monoidal. (* for binprod_precat *)
 Require Import UniMath.MetaSubstitutionSystems.ForceTactic. (* for force and force_goal *)
 
 Local Open Scope cat.
@@ -128,6 +128,12 @@ Notation "XY ⌋" := (((XY : coslice_precat_sq) false) : coslice_precat) (at lev
 Notation "#⌊ fg" := (fg true) (at level 24).
 Notation "fg ⌋#" := (fg false) (at level 24).
 
+Definition coslice_I : coslice_precat.
+Proof.
+  exists I.
+  exact (id I).
+Defined.
+
 Definition coslice_tensor_on_ob : ob coslice_precat_sq -> ob coslice_precat.
 Proof.
   (* the map on objects and their morphisms from I *)
@@ -146,13 +152,10 @@ Proof.
   (* the map on morphisms *)
   intros xy x'y' fg.
   exists (⊸#⌊fg #⊗ ⊸fg⌋#).
-  simpl.
-  unfold is_coslice_mor, coslice_tensor_on_ob.
+  unfold is_coslice_mor.
   simpl.
   rewrite <- assoc.
-  force_goal (I_to_II · (# tensor (pr2 (#⌊ xy) #, pr2 (xy ⌋#)) · # tensor (pr1 (#⌊ fg) #, pr1 (fg ⌋#))) = I_to_II · # tensor (pr2 (#⌊ x'y') #, pr2 (x'y' ⌋#))).
-  rewrite <- functor_comp.
-  rewrite <- binprod_comp.
+  rewrite <- (tensor_comp tensor).
   rewrite <- (△#⌊fg), <- (△fg⌋#).
   reflexivity.
 Defined.
@@ -160,70 +163,28 @@ Defined.
 Definition coslice_tensor_data : functor_data coslice_precat_sq coslice_precat :=
   functor_data_constr coslice_precat_sq coslice_precat coslice_tensor_on_ob coslice_tensor_on_mor.
 
-(* Definition mk_sobb (z : ∑ y, V ⟦ I, y ⟧) : coslice_precat.
-  exact z.
-Defined.
-
-Definition coslice_tensor_idax : functor_idax coslice_tensor_data.
-Proof.
-  intro xy.
-  simpl.
-  apply funcontrtwice.
-  intros.
-  refine (iscontraprop1 _ _).
-  exact (isaset_coslice_mor V I hs_V (coslice_tensor_on_ob xy) (coslice_tensor_on_ob xy) x x').
-  induction x, x'.
-  use tpair.
-  apply iscontr_hProp.
-  induction x, x'.
-  apply iscontr_uniqueness.
-  induction x.
-  induction x'.
-  unfold coslice_tensor_on_ob.
-  force_goal (coslice_tensor_on_mor xy xy (id xy) = id mk_sobb (⌑⌊xy ⊗ ⌑xy⌋,, I_to_II · ↓⌊xy #⊗ ↓xy⌋)).
-  simpl.
-Admitted.
-
-Definition coslice_tensor_compax : functor_compax coslice_tensor_data.
-Admitted.
+Context {coslice_tensor_idax : functor_idax coslice_tensor_data} {coslice_tensor_compax : functor_compax coslice_tensor_data}.
 
 Definition is_functor_coslice_tensor_data : is_functor coslice_tensor_data := dirprodpair coslice_tensor_idax coslice_tensor_compax.
 
 Definition coslice_tensor : functor coslice_precat_sq coslice_precat := tpair _ coslice_tensor_data is_functor_coslice_tensor_data.
 
-Definition coslice_associator : associator coslice_precat coslice_tensor.
-Proof. Admitted.
-
-Definition coslice_left_unitor : left_unitor coslice_precat coslice_tensor (I,, identity I).
-Proof. Admitted.
-
-Definition coslice_right_unitor : right_unitor coslice_precat coslice_tensor (I,, identity I).
-Proof. Admitted.
-
-Definition coslice_pentagon_eq : pentagon_eq coslice_precat coslice_tensor coslice_associator.
-Proof. Admitted.
-
-Definition coslice_triangle_eq : triangle_eq coslice_precat coslice_tensor (I,, identity I) coslice_associator
-coslice_left_unitor coslice_right_unitor.
-Proof. Admitted.
+Context {coslice_left_unitor : left_unitor coslice_tensor coslice_I} {coslice_right_unitor : right_unitor coslice_tensor coslice_I} {coslice_associator : associator coslice_tensor} {coslice_triangle_eq : triangle_eq coslice_tensor coslice_I coslice_left_unitor coslice_right_unitor
+coslice_associator} {coslice_pentagon_eq : pentagon_eq coslice_tensor coslice_associator}.
 
 Definition coslice_monoidal_precat : monoidal_precat.
 Proof.
   exists coslice_precat.
   exists coslice_tensor.
-  use tpair.
-  - exists I.
-    exact (identity I).
-  - unfold monoidal_struct.
-    exists coslice_associator.
-    exists coslice_left_unitor.
-    exists coslice_right_unitor.
-    split.
-    exact coslice_pentagon_eq.
-    exact coslice_triangle_eq.
+  exists coslice_I.
+  exists coslice_left_unitor.
+  exists coslice_right_unitor.
+  exists coslice_associator.
+  exists coslice_triangle_eq.
+  exact coslice_pentagon_eq.
 Defined.
 
-*) End Coslice_Monoidal.
+End Coslice_Monoidal.
 
 Section Coslice_Forgetful_Functor.
 

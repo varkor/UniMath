@@ -119,6 +119,8 @@ End Actions_Natural_Transformations.
 
 Definition action : UU := ∑ A : precategory, ∑ (odot : A ⊠ V ⟶ A), ∑ (ϱ : action_right_unitor A odot), ∑ (χ : action_convertor A odot), (action_triangle_eq A odot ϱ χ) × (action_pentagon_eq A odot χ).
 
+Definition action_struct : UU := ∑ A : precategory, ∑ (odot : A ⊠ V ⟶ A), ∑ (ϱ : action_right_unitor A odot), ∑ (χ : action_convertor A odot), unit.
+
 End Actions_Definition.
 
 Section Strengths_Definition.
@@ -271,47 +273,105 @@ use tpair.
     reflexivity.
 Defined.
 
-(*Definition U_action : action.
+Definition U_action_struct : action_struct.
 Proof.
   exists A.
   exists otimes_U_functor.
   (* K ⊗ U I_C -- (1_K ⊗ ϵ^{-1} · λ_D K) --> K *)
-  use tpair.
-  - (* ρ *)
+  use tpair; [| use tpair].
+  - (* ϱ *)
     unfold action_right_unitor.
     unfold nat_iso.
     use tpair.
-    unfold nat_trans.
-    pose (ϵ := pr1 (pr2 (pr1 U))).
-    pose (ϵ_inv := inv_from_iso (mk_iso (pr1 (pr2 U)))).
-    use tpair.
-    intro.
-    exact (id x #⊗_A ϵ_inv · pr1 ρ_A x). (* ϱ *)
-    intros x x' f.
-    pose (ρ_nat_law := pr2 (pr1 ρ_A) x x' f).
-    simpl; simpl in ρ_nat_law.
-    assert (ϵ_coher : id x #⊗_A ϵ_inv · f #⊗_A id I_A = f #⊗_A (#U (id I)) · id x' #⊗_A ϵ_inv).
-    + do 2 rewrite <- functor_comp.
-      do 2 rewrite <- binprod_comp.
-      rewrite functor_id.
-      do 2 (rewrite id_left; rewrite id_right).
-      reflexivity.
-    + rewrite assoc.
-      force (ϵ_coher : (# tensor_A (id x #, ϵ_inv) · # tensor_A (f #, id I_A) = # tensor_A (f #, # U (id I)) · # tensor_A (id x' #, ϵ_inv))).
-      force_goal (# tensor_A (f #, # U (id I)) · # tensor_A (id x' #, ϵ_inv) · (pr1 ρ_A) x' = # tensor_A (id x #, ϵ_inv) · (pr1 ρ_A) x · f).
-      rewrite <- ϵ_coher.
-      repeat rewrite <- assoc.
-      force_goal (# tensor_A (id x #, ϵ_inv) · (# tensor_A (f #, id I_A) · (pr1 ρ_A) x') = # tensor_A (id x #, ϵ_inv) · (pr1 (pr1 ρ_A) x · f)).
-      force (ρ_nat_law : (# (pr1 (pr2 Mon_A)) (f #, id pr1 (pr2 (pr2 Mon_A))) · pr1 (pr1 ρ_A) x' = pr1 (pr1 ρ_A) x · f)).
-      rewrite <- ρ_nat_law.
-      reflexivity.
-    +
+    + (* natural transformation *)
+      unfold nat_trans.
+      pose (ϵ_inv := inv_from_iso (mk_iso (pr1 (pr2 U)))).
+      exists (λ x, id x #⊗_A ϵ_inv · pr1 ρ_A x). (* ϱ *)
+      intros x x' f.
+      pose (ρ_nat_law := pr2 (pr1 ρ_A) x x' f).
+      simpl; simpl in ρ_nat_law.
+      assert (ϵ_coher : id x #⊗_A ϵ_inv · f #⊗_A id I_A = f #⊗_A (#U (id I)) · id x' #⊗_A ϵ_inv).
+      * do 2 rewrite <- functor_comp.
+        do 2 rewrite <- binprod_comp.
+        rewrite functor_id.
+        do 2 (rewrite id_left; rewrite id_right).
+        reflexivity.
+      * rewrite assoc.
+        force (ϵ_coher : (# tensor_A (id x #, ϵ_inv) · # tensor_A (f #, id I_A) = # tensor_A (f #, # U (id I)) · # tensor_A (id x' #, ϵ_inv))).
+        force_goal (# tensor_A (f #, # U (id I)) · # tensor_A (id x' #, ϵ_inv) · (pr1 ρ_A) x' = # tensor_A (id x #, ϵ_inv) · (pr1 ρ_A) x · f).
+        rewrite <- ϵ_coher.
+        repeat rewrite <- assoc.
+        force_goal (# tensor_A (id x #, ϵ_inv) · (# tensor_A (f #, id I_A) · (pr1 ρ_A) x') = # tensor_A (id x #, ϵ_inv) · (pr1 (pr1 ρ_A) x · f)).
+        force (ρ_nat_law : (# (pr1 (pr2 Mon_A)) (f #, id pr1 (pr2 (pr2 Mon_A))) · pr1 (pr1 ρ_A) x' = pr1 (pr1 ρ_A) x · f)).
+        rewrite <- ρ_nat_law.
+        reflexivity.
+    + (* is_nat_iso ϱ *)
       intro.
-      admit.
-    -
-      exists ρ'.
-      exists α'.
-      exact (monoidal_precat_eq Mon_V).
-Defined.*)
+      simpl.
+      use is_iso_comp_of_is_isos.
+      use is_iso_tensor_iso.
+      exact is_iso_id.
+      use is_iso_inv_from_iso.
+      exact (pr2 ρ_A c).
+  - (* χ *)
+    use tpair.
+    + (* natural transformation *)
+      unfold nat_trans.
+      pose (μ := pr1 (pr2 (pr2 (pr1 U)))).
+      use tpair.
+      intro x.
+      pose (k := x true true); pose (k' := x true false); pose (k'' := x false).
+      exact (pr1 α_A ((k, U k'), U k'') · id k #⊗_A pr1 μ (k', k'')). (* χ *)
+      intros x x' g.
+      simpl.
+      pose (k_1 := x true true); pose (k'_1 := x true false); pose (k''_1 := x false).
+      pose (k_2 := x' true true); pose (k'_2 := x' true false); pose (k''_2 := x' false).
+      pose (f := g true true); pose (f' := g true false); pose (f'' := g false).
+      fold monoidal_precat_precat.
+      pose (α_nat_law := pr2 (pr1 α_A) ((k_1, U k'_1), U k''_1) ((k_2, U k'_2), U k''_2) ((f #, #U f') #, #U f'')).
+      assert (μ_coher : id k_1 #⊗_A (pr1 μ (k'_1, k''_1)) · (f #⊗_A #U (f' #⊗ f'')) = f #⊗_A (#U f' #⊗_A #U f'') · id k_2 #⊗_A (pr1 μ (k'_2, k''_2))).
+      do 2 rewrite <- tensor_comp.
+      rewrite id_left; rewrite id_right.
+      assert (snd_eq : pr1 μ (k'_1, k''_1) · # U (f' #⊗ f'') = # tensor_A (# U f' #, # U f'') · pr1 μ (k'_2, k''_2)).
+      symmetry.
+      exact (pr2 μ (k'_1, k''_1) (k'_2, k''_2) (f' #, f'')).
+      force_goal (# tensor_A (f #, pr1 μ (k'_1, k''_1) · # U (# tensor (f' #, f''))) = # tensor_A (f #, # tensor_A (# U f' #, # U f'') · pr1 μ (k'_2, k''_2))).
+      rewrite <- snd_eq.
+      reflexivity.
+      force (α_nat_law : (# tensor_A (# tensor_A (f #, # U f') #, # U f'') · pr1 (pr1 α_A) ((k_2, U k'_2), U k''_2) = pr1 (pr1 α_A) ((k_1, U k'_1), U k''_1) · # tensor_A (f #, # tensor_A (# U f' #, # U f'')))).
+      pose (α_nat_law' := maponpaths (λ p, p · id k_2 #⊗_A (pr1 μ (k'_2, k''_2))) α_nat_law).
+      simpl in α_nat_law'.
+      repeat rewrite <- assoc in α_nat_law'.
+      force (α_nat_law' : (# tensor_A (# tensor_A (f #, # U f') #, # U f'') · (pr1 (pr1 α_A) ((k_2, U k'_2), U k''_2) · # tensor_A (id k_2 #, pr1 μ (k'_2, k''_2))) = pr1 (pr1 α_A) ((k_1, U k'_1), U k''_1) · (# tensor_A (f #, # tensor_A (# U f' #, # U f'')) · # tensor_A (id k_2 #, pr1 μ (k'_2, k''_2))))).
+      force (μ_coher : (# tensor_A (id k_1 #, pr1 μ (k'_1, k''_1)) · # tensor_A (f #, # U (# tensor (f' #, f''))) = # tensor_A (f #, # tensor_A (# U f' #, # U f'')) · # tensor_A (id k_2 #, pr1 μ (k'_2, k''_2)))).
+      pose (common := # tensor_A (f #, # tensor_A (# U f' #, # U f'')) · # tensor_A (id k_2 #, pr1 μ (k'_2, k''_2))).
+      fold common in μ_coher.
+      fold common in α_nat_law'.
+      rewrite <- μ_coher in α_nat_law'.
+      repeat rewrite assoc in α_nat_law'.
+      repeat rewrite assoc.
+      exact α_nat_law'.
+    + (* is_nat_iso χ *)
+      intro x.
+      pose (k := x true true); pose (k' := x true false); pose (k'' := x false).
+      use is_iso_comp_of_is_isos.
+      exact (pr2 α_A ((k, U k'), U k'')).
+      use is_iso_tensor_iso.
+      use is_iso_id.
+      exact (pr2 (pr2 U) (k', k'')).
+  - exact tt.
+Defined.
+
+Context {U_action_tlaw : action_triangle_eq (pr1 U_action_struct) (pr1 (pr2 U_action_struct)) (pr1 (pr2 (pr2 U_action_struct))) (pr1 (pr2 (pr2 (pr2 U_action_struct))))} {U_action_plaw : action_pentagon_eq (pr1 U_action_struct) (pr1 (pr2 U_action_struct)) (pr1 (pr2 (pr2 (pr2 U_action_struct))))}.
+
+Definition U_action : action.
+  exists (pr1 U_action_struct).
+  exists (pr1 (pr2 U_action_struct)).
+  exists (pr1 (pr2 (pr2 U_action_struct))).
+  exists (pr1 (pr2 (pr2 (pr2 U_action_struct)))).
+  split.
+  exact U_action_tlaw.
+  exact U_action_plaw.
+Defined.
 
 End Strong_Monoidal_Functor_Action.
