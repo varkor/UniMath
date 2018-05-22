@@ -4,3 +4,4 @@ CosliceMonoidal.v
 ParameterisedFunctorAlgebras.v
 ActionsAndStrengths.v
 SecondOrderAbstractSyntax.v
+FiniteCardinalsCat.v
