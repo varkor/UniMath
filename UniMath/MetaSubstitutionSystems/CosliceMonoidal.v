@@ -121,7 +121,7 @@ Definition coslice_precat_sq := coslice_precat ⊠ coslice_precat.
 Definition I_to_II : I --> I ⊗ I.
 Proof.
   exact (nat_iso_to_trans_inv λ' I).
-Qed.
+Defined.
 
 Notation "⌊ XY" := (((XY : coslice_precat_sq) true) : coslice_precat) (at level 24).
 Notation "XY ⌋" := (((XY : coslice_precat_sq) false) : coslice_precat) (at level 24).
@@ -140,11 +140,6 @@ Proof.
   intro xy.
   exists (⌑⌊xy ⊗ ⌑xy⌋).
   exact (I_to_II · ↓⌊xy #⊗ ↓xy⌋).
-Defined.
-
-Lemma precomp_eq {C : precategory} {X Y Z : C} (f : X --> Y) (g g' : Y --> Z) (eq : g = g') : (f · g = f · g').
-  rewrite eq.
-  reflexivity.
 Defined.
 
 Definition coslice_tensor_on_mor : ∏ xy x'y' : ob coslice_precat_sq, xy --> x'y' -> coslice_tensor_on_ob xy --> coslice_tensor_on_ob x'y'.
@@ -168,6 +163,18 @@ Context {coslice_tensor_idax : functor_idax coslice_tensor_data} {coslice_tensor
 Definition is_functor_coslice_tensor_data : is_functor coslice_tensor_data := dirprodpair coslice_tensor_idax coslice_tensor_compax.
 
 Definition coslice_tensor : functor coslice_precat_sq coslice_precat := tpair _ coslice_tensor_data is_functor_coslice_tensor_data.
+
+Definition coslice_right_unitor : right_unitor coslice_tensor coslice_I.
+Proof.
+  use tpair.
+  use tpair.
+  intro x.
+  exists (pr1 ρ' (pr1 x)).
+  (* simpl. *)
+  unfold is_coslice_mor, coslice_tensor_on_ob, coslice_I.
+  simpl.
+  unfold I_to_II.
+  Check (pr2 ρ' (pr1 x)) (pr2 x).
 
 Context {coslice_left_unitor : left_unitor coslice_tensor coslice_I} {coslice_right_unitor : right_unitor coslice_tensor coslice_I} {coslice_associator : associator coslice_tensor} {coslice_triangle_eq : triangle_eq coslice_tensor coslice_I coslice_left_unitor coslice_right_unitor
 coslice_associator} {coslice_pentagon_eq : pentagon_eq coslice_tensor coslice_associator}.
