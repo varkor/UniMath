@@ -1,5 +1,8 @@
 (**
   Generalisation of the concept of actions, over monoidal categories.
+    - Definition of V-action, for a monoidal category V.
+    - Definition of an action induced by a strong monoidal functor (under some assumptions).
+    - Definition of a cartesian action for a cartesian monoidal category.
 
   Based on the definitions in the paper "Second-Order and Dependently-Sorted Abstract Syntax" by Marcelo Fiore.
 **)
@@ -7,11 +10,15 @@
 Require Import UniMath.Foundations.PartD.
 Require Import UniMath.CategoryTheory.Categories.
 Require Import UniMath.CategoryTheory.functor_categories.
+Require Import UniMath.CategoryTheory.limits.binproducts.
 Require Import UniMath.CategoryTheory.PrecategoryBinProduct.
 Require Import UniMath.CategoryTheory.Monoidal.MonoidalCategories.
 Require Import UniMath.CategoryTheory.Monoidal.MonoidalFunctors.
+Require Import UniMath.CategoryTheory.limits.terminal.
 
 Local Open Scope cat.
+
+Section Actions.
 
 Context (Mon_V : monoidal_precat).
 
@@ -318,3 +325,24 @@ Definition U_action : action.
 Defined.
 
 End Strong_Monoidal_Functor_Action.
+
+End Actions.
+
+Section Cartesian_Action.
+
+Context (C : precategory).
+Context (bin_prod : BinProducts C) (terminal : Terminal C).
+
+Let cart_C := cartesian_monoidal_precat C bin_prod terminal.
+
+(* A cartesian strength on a cartesian monoidal category. *)
+Definition cartesian_action : action cart_C.
+Proof.
+  exists C.
+  exists (binproduct_functor bin_prod).
+  exists (monoidal_precat_right_unitor cart_C).
+  exists (monoidal_precat_associator cart_C).
+  exact (monoidal_precat_eq cart_C).
+Defined.
+
+End Cartesian_Action.

@@ -13,7 +13,9 @@ Require Import UniMath.CategoryTheory.Monoidal.Actions.
 
 Local Open Scope cat.
 
-Let Mon_V := Actions.Mon_V.
+Section Strengths.
+
+Context (Mon_V : monoidal_precat).
 Let V := monoidal_precat_precat Mon_V.
 Let I := monoidal_precat_unit Mon_V.
 Let tensor := monoidal_precat_tensor Mon_V.
@@ -21,7 +23,7 @@ Notation "X ⊗ Y" := (tensor (X , Y)) (at level 31).
 
 Section Strengths_Definition.
 
-Context (actn actn' : action).
+Context (actn actn' : action Mon_V).
 
 Let A := pr1 actn.
 Let odot := pr1 (pr2 actn).
@@ -115,4 +117,6 @@ End Strengths_Definition.
   The standard tensorial strength:
   F(A) ⊗ B --> F(A ⊗ B)
 *)
-Definition tensorial_strength := strength tensorial_action tensorial_action.
+Definition tensorial_strength := strength (tensorial_action _) (tensorial_action _).
+
+End Strengths.
