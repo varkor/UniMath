@@ -1,5 +1,7 @@
-(**
-  Definition of tensorial strengths between actions over monoidal categories.
+(** Generalisation of the concept of tensorial strengths, over monoidal categories.
+  - Definition of tensorial strengths between actions over monoidal categories.
+  - Definition of the standard tensorial strength F(A) ⊗ B --> F(A ⊗ B).
+  - Definition of a cartesian strength.
 
   Based on the definitions in the paper "Second-Order and Dependently-Sorted Abstract Syntax" by Marcelo Fiore.
 **)
@@ -7,15 +9,17 @@
 Require Import UniMath.Foundations.PartD.
 Require Import UniMath.CategoryTheory.Categories.
 Require Import UniMath.CategoryTheory.functor_categories.
+Require Import UniMath.CategoryTheory.limits.binproducts.
 Require Import UniMath.CategoryTheory.PrecategoryBinProduct.
 Require Import UniMath.CategoryTheory.Monoidal.MonoidalCategories.
 Require Import UniMath.CategoryTheory.Monoidal.Actions.
+Require Import UniMath.CategoryTheory.limits.terminal.
 
 Local Open Scope cat.
 
 Section Strengths.
 
-Context (Mon_V : monoidal_precat).
+Context {Mon_V : monoidal_precat}.
 Let V := monoidal_precat_precat Mon_V.
 Let I := monoidal_precat_unit Mon_V.
 Let tensor := monoidal_precat_tensor Mon_V.
@@ -23,7 +27,7 @@ Notation "X ⊗ Y" := (tensor (X , Y)) (at level 31).
 
 Section Strengths_Definition.
 
-Context (actn actn' : action Mon_V).
+Context (actn actn' : @action Mon_V).
 
 Let A := pr1 actn.
 Let odot := pr1 (pr2 actn).
@@ -117,6 +121,18 @@ End Strengths_Definition.
   The standard tensorial strength:
   F(A) ⊗ B --> F(A ⊗ B)
 *)
-Definition tensorial_strength := strength (tensorial_action _) (tensorial_action _).
+Definition tensorial_strength : UU := strength canonical_tensorial_action canonical_tensorial_action.
 
 End Strengths.
+
+Section Cartesian_Strength.
+
+Context (C : precategory).
+Context (bin_prod : BinProducts C) (terminal : Terminal C).
+
+Let cart_C := cartesian_monoidal_precat C bin_prod terminal.
+
+(* A cartesian strength on a cartesian monoidal category. *)
+Definition cartesian_strength : UU := strength (cartesian_action _ bin_prod terminal) (cartesian_action _ bin_prod terminal).
+
+End Cartesian_Strength.

@@ -1,6 +1,7 @@
 (**
   Generalisation of the concept of actions, over monoidal categories.
     - Definition of V-action, for a monoidal category V.
+    - Definition of the canonical tensorial action on a monoidal category.
     - Definition of an action induced by a strong monoidal functor (under some assumptions).
     - Definition of a cartesian action for a cartesian monoidal category.
 
@@ -20,7 +21,7 @@ Local Open Scope cat.
 
 Section Actions.
 
-Context (Mon_V : monoidal_precat).
+Context {Mon_V : monoidal_precat}.
 
 Let V := monoidal_precat_precat Mon_V.
 Let I := monoidal_precat_unit Mon_V.
@@ -146,7 +147,7 @@ Definition action_struct : UU := ∑ A : precategory, ∑ (odot : A ⊠ V ⟶ A)
 End Actions_Definition.
 
 (* The canonical tensorial action on a monoidal category. *)
-Definition tensorial_action : action.
+Definition canonical_tensorial_action : action.
 Proof.
   exists V.
   exists tensor.
@@ -335,14 +336,7 @@ Context (bin_prod : BinProducts C) (terminal : Terminal C).
 
 Let cart_C := cartesian_monoidal_precat C bin_prod terminal.
 
-(* A cartesian strength on a cartesian monoidal category. *)
-Definition cartesian_action : action cart_C.
-Proof.
-  exists C.
-  exists (binproduct_functor bin_prod).
-  exists (monoidal_precat_right_unitor cart_C).
-  exists (monoidal_precat_associator cart_C).
-  exact (monoidal_precat_eq cart_C).
-Defined.
+(* A cartesian action on a cartesian monoidal category. *)
+Definition cartesian_action : @action cart_C := canonical_tensorial_action.
 
 End Cartesian_Action.
