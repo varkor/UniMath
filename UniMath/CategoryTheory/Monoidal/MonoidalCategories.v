@@ -9,6 +9,8 @@ Require Import UniMath.CategoryTheory.Categories.
 Require Import UniMath.CategoryTheory.functor_categories.
 Require Import UniMath.CategoryTheory.ProductCategory.
 Require Import UniMath.CategoryTheory.PrecategoryBinProduct.
+Require Import UniMath.CategoryTheory.limits.binproducts.
+Require Import UniMath.CategoryTheory.limits.terminal.
 
 Local Open Scope cat.
 
@@ -196,3 +198,27 @@ Definition strict_monoidal_precat : UU :=
   ∏ (eq_α : assoc_left (monoidal_precat_tensor M) =
   assoc_right (monoidal_precat_tensor M)),
   is_strict (monoidal_precat_tensor M) (monoidal_precat_unit M) eq_λ (monoidal_precat_left_unitor M) eq_ρ (monoidal_precat_right_unitor M) eq_α (monoidal_precat_associator M).
+
+Section Cartesian_Monoidal_Category.
+
+Context (C : precategory).
+Context (bin_prod : BinProducts C) (terminal : Terminal C).
+
+(* FIXME: the following coherence conditions are trivial but tedious. *)
+Definition cartesian_monoidal_coherence : ∑ (λ' : left_unitor (binproduct_functor bin_prod) terminal)
+(ρ' : right_unitor (binproduct_functor bin_prod) terminal)
+(α' : associator (binproduct_functor bin_prod)),
+triangle_eq (binproduct_functor bin_prod) terminal λ' ρ' α'
+× pentagon_eq (binproduct_functor bin_prod) α'.
+Proof.
+Admitted.
+
+Definition cartesian_monoidal_precat : monoidal_precat.
+Proof.
+  exists C.
+  exists (binproduct_functor bin_prod).
+  exists terminal.
+  exact cartesian_monoidal_coherence.
+Defined.
+
+End Cartesian_Monoidal_Category.
