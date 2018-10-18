@@ -61,6 +61,8 @@ Definition BinProductPr1 {c d : C} (P : BinProduct c d): BinProductObject P --> 
 Definition BinProductPr2 {c d : C} (P : BinProduct c d) : BinProductObject P --> d :=
    pr2 (pr2 (pr1 P)).
 
+Definition BinProductSwap {c d : C} (P : BinProduct c d) (P' : BinProduct d c) : BinProductObject P --> BinProductObject P' := pr1 (pr1 (pr2 P' (BinProductObject P) (BinProductPr2 P) (BinProductPr1 P))).
+
 Definition isBinProduct_BinProduct {c d : C} (P : BinProduct c d) :
    isBinProduct c d (BinProductObject P) (BinProductPr1 P) (BinProductPr2 P).
 Proof.
