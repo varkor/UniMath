@@ -13,8 +13,8 @@ Context (Mon_V : monoidal_precat).
 Let V := monoidal_precat_precat Mon_V.
 Let I := monoidal_precat_unit Mon_V.
 Let tensor := monoidal_precat_tensor Mon_V.
-Notation "X ⊗ Y" := (tensor (X , Y)) (at level 31).
-Notation "f #⊗ g" := (#tensor (f #, g)) (at level 31).
+Notation "X ⊗⊗ Y" := (tensor (X , Y)) (at level 31).
+Notation "f #⊗⊗ g" := (#tensor (f #, g)) (at level 31).
 Let α' := monoidal_precat_associator Mon_V.
 Let λ' := monoidal_precat_left_unitor Mon_V.
 Let ρ' := monoidal_precat_right_unitor Mon_V.
@@ -82,9 +82,9 @@ Definition odot_x_otimes_y_functor : (A ⊠ V) ⊠ V ⟶ A.
 Proof.
   use tpair.
     - use tpair.
-      exact (λ a, a true true ⊙ (a true false ⊗ a false)).
+      exact (λ a, a true true ⊙ (a true false ⊗⊗ a false)).
       intros ? ? f.
-      exact (f true true #⊙ (f true false #⊗ f false)).
+      exact (f true true #⊙ (f true false #⊗⊗ f false)).
     - split.
       + intro.
         simpl.
@@ -111,7 +111,7 @@ Definition action_triangle_eq (ϱ : action_right_unitor) (χ : action_convertor)
   (pr1 ϱ a) #⊙ (id x) = (pr1 χ ((a, I), x)) · (id a) #⊙ (pr1 λ' x).
 
 Definition action_pentagon_eq (χ : action_convertor) := ∏ (a : A), ∏ (x y z : V),
-(pr1 χ ((a ⊙ x, y), z)) · (pr1 χ ((a, x), y ⊗ z)) = (pr1 χ ((a, x), y)) #⊙ (id z) · (pr1 χ ((a, x ⊗ y), z)) · (id a) #⊙ (pr1 α' ((x, y), z)).
+(pr1 χ ((a ⊙ x, y), z)) · (pr1 χ ((a, x), y ⊗⊗ z)) = (pr1 χ ((a, x), y)) #⊙ (id z) · (pr1 χ ((a, x ⊗⊗ y), z)) · (id a) #⊙ (pr1 α' ((x, y), z)).
 
 End Actions_Natural_Transformations.
 
@@ -197,7 +197,7 @@ Definition strength_triangle_eq (ϛ : strength_nat) := ∏ (a : A),
 (pr1 ϛ (a, I)) · (#F (pr1 ϱ a)) = pr1 ϱ' (F a).
 
 Definition strength_pentagon_eq (ϛ : strength_nat) := ∏ (a : A), ∏ (x y : V),
-  (pr1 χ' ((F a, x), y)) · pr1 ϛ (a, x ⊗ y) = (pr1 ϛ (a, x)) #⊙' (id y) · (pr1 ϛ (a ⊙ x, y)) · (#F (pr1 χ ((a, x), y))).
+  (pr1 χ' ((F a, x), y)) · pr1 ϛ (a, x ⊗⊗ y) = (pr1 ϛ (a, x)) #⊙' (id y) · (pr1 ϛ (a ⊙ x, y)) · (#F (pr1 χ ((a, x), y))).
 
 End Strengths_Natural_Transformation.
 
@@ -218,7 +218,7 @@ Proof.
   exact (monoidal_precat_eq Mon_V).
 Defined.
 
-(* F(A) ⊗ B --> F(A ⊗ B) *)
+(* F(A) ⊗⊗ B --> F(A ⊗⊗ B) *)
 Definition tensorial_strength := strength tensorial_action tensorial_action.
 
 Context (bin_product : BinProducts V).
@@ -241,8 +241,8 @@ Context (Mon_A : monoidal_precat).
 Let A := monoidal_precat_precat Mon_A.
 Let I_A := monoidal_precat_unit Mon_A.
 Let tensor_A := monoidal_precat_tensor Mon_A.
-Notation "X ⊗_A Y" := (tensor_A (X , Y)) (at level 31).
-Notation "f #⊗_A g" := (#tensor_A (f #, g)) (at level 31).
+Notation "X ⊗⊗_A Y" := (tensor_A (X , Y)) (at level 31).
+Notation "f #⊗⊗_A g" := (#tensor_A (f #, g)) (at level 31).
 Let α_A := monoidal_precat_associator Mon_A.
 Let λ_A := monoidal_precat_left_unitor Mon_A.
 Let ρ_A := monoidal_precat_right_unitor Mon_A.
@@ -252,9 +252,9 @@ Context (U : strong_monoidal_functor Mon_V Mon_A).
 Definition otimes_U_functor : A ⊠ V ⟶ A.
 use tpair.
 - use tpair.
-  exact (λ av, av true ⊗_A U (av false)).
+  exact (λ av, av true ⊗⊗_A U (av false)).
   intros ? ? f.
-  exact (f true #⊗_A #U (f false)).
+  exact (f true #⊗⊗_A #U (f false)).
 - split.
   + intro.
     simpl.
@@ -277,7 +277,7 @@ Definition U_action_struct : action_struct.
 Proof.
   exists A.
   exists otimes_U_functor.
-  (* K ⊗ U I_C -- (1_K ⊗ ϵ^{-1} · λ_D K) --> K *)
+  (* K ⊗⊗ U I_C -- (1_K ⊗⊗ ϵ^{-1} · λ_D K) --> K *)
   use tpair; [| use tpair].
   - (* ϱ *)
     unfold action_right_unitor.
@@ -286,11 +286,11 @@ Proof.
     + (* natural transformation *)
       unfold nat_trans.
       pose (ϵ_inv := inv_from_iso (mk_iso (pr1 (pr2 U)))).
-      exists (λ x, id x #⊗_A ϵ_inv · pr1 ρ_A x). (* ϱ *)
+      exists (λ x, id x #⊗⊗_A ϵ_inv · pr1 ρ_A x). (* ϱ *)
       intros x x' f.
       pose (ρ_nat_law := pr2 (pr1 ρ_A) x x' f).
       simpl; simpl in ρ_nat_law.
-      assert (ϵ_coher : id x #⊗_A ϵ_inv · f #⊗_A id I_A = f #⊗_A (#U (id I)) · id x' #⊗_A ϵ_inv).
+      assert (ϵ_coher : id x #⊗⊗_A ϵ_inv · f #⊗⊗_A id I_A = f #⊗⊗_A (#U (id I)) · id x' #⊗⊗_A ϵ_inv).
       * do 2 rewrite <- functor_comp.
         do 2 rewrite <- binprod_comp.
         rewrite functor_id.
@@ -321,7 +321,7 @@ Proof.
       use tpair.
       intro x.
       pose (k := x true true); pose (k' := x true false); pose (k'' := x false).
-      exact (pr1 α_A ((k, U k'), U k'') · id k #⊗_A pr1 μ (k', k'')). (* χ *)
+      exact (pr1 α_A ((k, U k'), U k'') · id k #⊗⊗_A pr1 μ (k', k'')). (* χ *)
       intros x x' g.
       simpl.
       pose (k_1 := x true true); pose (k'_1 := x true false); pose (k''_1 := x false).
@@ -329,17 +329,17 @@ Proof.
       pose (f := g true true); pose (f' := g true false); pose (f'' := g false).
       fold monoidal_precat_precat.
       pose (α_nat_law := pr2 (pr1 α_A) ((k_1, U k'_1), U k''_1) ((k_2, U k'_2), U k''_2) ((f #, #U f') #, #U f'')).
-      assert (μ_coher : id k_1 #⊗_A (pr1 μ (k'_1, k''_1)) · (f #⊗_A #U (f' #⊗ f'')) = f #⊗_A (#U f' #⊗_A #U f'') · id k_2 #⊗_A (pr1 μ (k'_2, k''_2))).
+      assert (μ_coher : id k_1 #⊗⊗_A (pr1 μ (k'_1, k''_1)) · (f #⊗⊗_A #U (f' #⊗⊗ f'')) = f #⊗⊗_A (#U f' #⊗⊗_A #U f'') · id k_2 #⊗⊗_A (pr1 μ (k'_2, k''_2))).
       do 2 rewrite <- tensor_comp.
       rewrite id_left; rewrite id_right.
-      assert (snd_eq : pr1 μ (k'_1, k''_1) · # U (f' #⊗ f'') = # tensor_A (# U f' #, # U f'') · pr1 μ (k'_2, k''_2)).
+      assert (snd_eq : pr1 μ (k'_1, k''_1) · # U (f' #⊗⊗ f'') = # tensor_A (# U f' #, # U f'') · pr1 μ (k'_2, k''_2)).
       symmetry.
       exact (pr2 μ (k'_1, k''_1) (k'_2, k''_2) (f' #, f'')).
       force_goal (# tensor_A (f #, pr1 μ (k'_1, k''_1) · # U (# tensor (f' #, f''))) = # tensor_A (f #, # tensor_A (# U f' #, # U f'') · pr1 μ (k'_2, k''_2))).
       rewrite <- snd_eq.
       reflexivity.
       force (α_nat_law : (# tensor_A (# tensor_A (f #, # U f') #, # U f'') · pr1 (pr1 α_A) ((k_2, U k'_2), U k''_2) = pr1 (pr1 α_A) ((k_1, U k'_1), U k''_1) · # tensor_A (f #, # tensor_A (# U f' #, # U f'')))).
-      pose (α_nat_law' := maponpaths (λ p, p · id k_2 #⊗_A (pr1 μ (k'_2, k''_2))) α_nat_law).
+      pose (α_nat_law' := maponpaths (λ p, p · id k_2 #⊗⊗_A (pr1 μ (k'_2, k''_2))) α_nat_law).
       simpl in α_nat_law'.
       repeat rewrite <- assoc in α_nat_law'.
       force (α_nat_law' : (# tensor_A (# tensor_A (f #, # U f') #, # U f'') · (pr1 (pr1 α_A) ((k_2, U k'_2), U k''_2) · # tensor_A (id k_2 #, pr1 μ (k'_2, k''_2))) = pr1 (pr1 α_A) ((k_1, U k'_1), U k''_1) · (# tensor_A (f #, # tensor_A (# U f' #, # U f'')) · # tensor_A (id k_2 #, pr1 μ (k'_2, k''_2))))).

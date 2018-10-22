@@ -11,6 +11,7 @@ Require Export UniMath.Topology.All.
 Require Export UniMath.RealNumbers.All.
 Require Export UniMath.Tactics.All.
 Require Export UniMath.SubstitutionSystems.All.
+Require Export UniMath.MetaSubstitutionSystems.All.
 Require Export UniMath.Folds.All.
 Require Export UniMath.HomologicalAlgebra.All.
 Require Export UniMath.Induction.All.

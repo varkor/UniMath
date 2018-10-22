@@ -11,7 +11,7 @@ Local Open Scope cat.
 Section Binary_Product_Precat.
 
 Definition binprod_precat (C D : precategory) : precategory
-  := (product_precategory bool (λ x, if x then C else D)).
+  := (product_precategory (λ (x : bool), if x then C else D)).
 
 Local Notation "C ⊠ D" := (binprod_precat C D) (at level 38).
 
@@ -154,17 +154,17 @@ Section Monoidal_Precat.
 
 Context {C : precategory} (tensor : C ⊠ C ⟶ C) (I : C).
 
-Notation "X ⊗ Y" := (tensor (X, Y)) (at level 31).
-Notation "f #⊗ g" := (#tensor (f #, g)) (at level 31).
+Notation "X ⊗⊗ Y" := (tensor (X, Y)) (at level 31).
+Notation "f #⊗⊗ g" := (#tensor (f #, g)) (at level 31).
 
-Definition tensor_id {X Y : C} : id X #⊗ id Y = id (X ⊗ Y).
+Definition tensor_id {X Y : C} : id X #⊗⊗ id Y = id (X ⊗⊗ Y).
 Proof.
   rewrite binprod_id.
   rewrite (functor_id tensor).
   reflexivity.
 Defined.
 
-Definition tensor_comp {X Y Z X' Y' Z' : C} (f : X --> Y) (g : Y --> Z) (f' : X' --> Y') (g' : Y' --> Z') : (f · g) #⊗ (f' · g') = f #⊗ f' · g #⊗ g'.
+Definition tensor_comp {X Y Z X' Y' Z' : C} (f : X --> Y) (g : Y --> Z) (f' : X' --> Y') (g' : Y' --> Z') : (f · g) #⊗⊗ (f' · g') = f #⊗⊗ f' · g #⊗⊗ g'.
 Proof.
   rewrite binprod_comp.
   rewrite (functor_comp tensor).
@@ -172,19 +172,19 @@ Proof.
 Defined.
 
 Definition is_iso_tensor_iso {X Y X' Y' : C} {f : X --> Y} {g : X' --> Y'} (f_is_iso : is_iso f)
-(g_is_iso : is_iso g) : is_iso (f #⊗ g).
+(g_is_iso : is_iso g) : is_iso (f #⊗⊗ g).
 Proof.
   exact (functor_on_is_iso_is_iso (is_iso_binprod_iso f_is_iso g_is_iso)).
 Defined.
 
-(* I ⊗ - *)
+(* I ⊗⊗ - *)
 Definition I_pretensor : C ⟶ C.
 Proof.
     use tpair.
     - use tpair.
-      exact (λ c, I ⊗ c).
+      exact (λ c, I ⊗⊗ c).
       intros ? ? f.
-      exact (id I #⊗ f).
+      exact (id I #⊗⊗ f).
     - split.
       + intro.
         simpl.
@@ -206,14 +206,14 @@ Defined.
 Definition left_unitor : UU :=
   nat_iso I_pretensor (functor_identity C).
 
-(* - ⊗ I *)
+(* - ⊗⊗ I *)
 Definition I_posttensor : C ⟶ C.
 Proof.
     use tpair.
     - use tpair.
-      exact (λ c, c ⊗ I).
+      exact (λ c, c ⊗⊗ I).
       intros ? ? f.
-      exact (f #⊗ id I).
+      exact (f #⊗⊗ id I).
     - split.
       + intro.
         simpl.
@@ -235,14 +235,14 @@ Defined.
 Definition right_unitor : UU :=
   nat_iso I_posttensor (functor_identity C).
 
-(* (- ⊗ =) ⊗ ≡ *)
+(* (- ⊗⊗ =) ⊗⊗ ≡ *)
 Definition assoc_left : (C ⊠ C) ⊠ C ⟶ C.
 Proof.
   use tpair.
   - use tpair.
-    exact (λ c, (c true true ⊗ c true false) ⊗ c false).
+    exact (λ c, (c true true ⊗⊗ c true false) ⊗⊗ c false).
     intros ? ? f.
-    exact ((f true true #⊗ f true false) #⊗ f false).
+    exact ((f true true #⊗⊗ f true false) #⊗⊗ f false).
   - split.
     + intro a.
       simpl.
@@ -257,14 +257,14 @@ Proof.
       reflexivity.
 Defined.
 
-(* - ⊗ (= ⊗ ≡) *)
+(* - ⊗⊗ (= ⊗⊗ ≡) *)
 Definition assoc_right : (C ⊠ C) ⊠ C ⟶ C.
 Proof.
   use tpair.
   - use tpair.
-    exact (λ c, c true true ⊗ (c true false ⊗ c false)).
+    exact (λ c, c true true ⊗⊗ (c true false ⊗⊗ c false)).
     intros ? ? f.
-    exact (f true true #⊗ (f true false #⊗ f false)).
+    exact (f true true #⊗⊗ (f true false #⊗⊗ f false)).
   - split.
     + intro a.
       simpl.
@@ -284,10 +284,10 @@ Definition associator : UU :=
   nat_iso assoc_left assoc_right.
 
 Definition triangle_eq (λ' : left_unitor) (ρ' : right_unitor) (α' : associator) : UU :=
-  ∏ (a b : C), pr1 ρ' a #⊗ id b = pr1 α' ((a, I), b) · id a #⊗ pr1 λ' b.
+  ∏ (a b : C), pr1 ρ' a #⊗⊗ id b = pr1 α' ((a, I), b) · id a #⊗⊗ pr1 λ' b.
 
 Definition pentagon_eq (α' : associator) : UU :=
-  ∏ (a b c d : C), pr1 α' ((a ⊗ b, c), d) · pr1 α' ((a, b), c ⊗ d) = pr1 α' ((a, b), c) #⊗ id d · pr1 α' ((a, b ⊗ c), d) · id a #⊗ pr1 α' ((b, c), d).
+  ∏ (a b c d : C), pr1 α' ((a ⊗⊗ b, c), d) · pr1 α' ((a, b), c ⊗⊗ d) = pr1 α' ((a, b), c) #⊗⊗ id d · pr1 α' ((a, b ⊗⊗ c), d) · id a #⊗⊗ pr1 α' ((b, c), d).
 
 Definition is_strict (λ' : left_unitor) (ρ' : right_unitor) (α' : associator) : UU :=
   (is_nat_iso_id λ') × (is_nat_iso_id ρ') × (is_nat_iso_id α').
@@ -330,16 +330,16 @@ Context (Mon_C Mon_D : monoidal_precat).
 
 Let C := monoidal_precat_precat Mon_C.
 Let tensor_C := monoidal_precat_tensor Mon_C.
-Notation "X ⊗_C Y" := (tensor_C (X , Y)) (at level 31).
-Notation "f #⊗_C g" := (# tensor_C (f #, g)) (at level 31).
+Notation "X ⊗⊗_C Y" := (tensor_C (X , Y)) (at level 31).
+Notation "f #⊗⊗_C g" := (# tensor_C (f #, g)) (at level 31).
 Let I_C := monoidal_precat_unit Mon_C.
 Let α_C := monoidal_precat_associator Mon_C.
 Let λ_C := monoidal_precat_left_unitor Mon_C.
 Let ρ_C := monoidal_precat_right_unitor Mon_C.
 Let D := monoidal_precat_precat Mon_D.
 Let tensor_D := monoidal_precat_tensor Mon_D.
-Notation "X ⊗_D Y" := (tensor_D (X , Y)) (at level 31).
-Notation "f #⊗_D g" := (# tensor_D (f #, g)) (at level 31).
+Notation "X ⊗⊗_D Y" := (tensor_D (X , Y)) (at level 31).
+Notation "f #⊗⊗_D g" := (# tensor_D (f #, g)) (at level 31).
 Let I_D := monoidal_precat_unit Mon_D.
 Let α_D := monoidal_precat_associator Mon_D.
 Let λ_D := monoidal_precat_left_unitor Mon_D.
@@ -352,9 +352,9 @@ Context (F : C ⟶ D).
 Definition monoidal_functor_map_dom : C ⊠ C ⟶ D.
 use tpair.
 - use tpair.
-  exact (λ c, F (c true) ⊗_D F (c false)).
+  exact (λ c, F (c true) ⊗⊗_D F (c false)).
   intros ? ? f.
-  exact (#F (f true) #⊗_D #F (f false)).
+  exact (#F (f true) #⊗⊗_D #F (f false)).
 - split.
   + intro.
     simpl.
@@ -372,9 +372,9 @@ Defined.
 Definition monoidal_functor_map_codom : C ⊠ C ⟶ D.
 use tpair.
 - use tpair.
-  exact (λ c, F (c true ⊗_C c false)).
+  exact (λ c, F (c true ⊗⊗_C c false)).
   intros ? ? f.
-  exact (#F (f true #⊗_C f false)).
+  exact (#F (f true #⊗⊗_C f false)).
 - split.
   + intro.
     simpl.
@@ -398,15 +398,15 @@ Definition monoidal_functor_map :=
 
 Definition monoidal_functor_associativity (μ : monoidal_functor_map) :=
   ∏ (x y z : C),
-  pr1 μ (x, y) #⊗_D id F(z) · pr1 μ (x ⊗_C y, z) · #F (pr1 α_C ((x, y), z))
+  pr1 μ (x, y) #⊗⊗_D id F(z) · pr1 μ (x ⊗⊗_C y, z) · #F (pr1 α_C ((x, y), z))
   =
-  pr1 α_D ((F x, F y), F z) · id (F x) #⊗_D pr1 μ (y, z) · pr1 μ (x, y ⊗_C z).
+  pr1 α_D ((F x, F y), F z) · id (F x) #⊗⊗_D pr1 μ (y, z) · pr1 μ (x, y ⊗⊗_C z).
 
 Definition monoidal_functor_unitality (ϵ : I_D --> F I_C) (μ : monoidal_functor_map) :=
   ∏ (x : C),
-  (pr1 λ_D (F x) = ϵ #⊗_D (id (F x)) · pr1 μ (I_C, x) · #F (pr1 λ_C x))
+  (pr1 λ_D (F x) = ϵ #⊗⊗_D (id (F x)) · pr1 μ (I_C, x) · #F (pr1 λ_C x))
   ×
-  (pr1 ρ_D (F x) = (id (F x)) #⊗_D ϵ · pr1 μ (x, I_C) · #F (pr1 ρ_C x)).
+  (pr1 ρ_D (F x) = (id (F x)) #⊗⊗_D ϵ · pr1 μ (x, I_C) · #F (pr1 ρ_C x)).
 
 End Monoidal_Functor_Conditions.
 
@@ -430,19 +430,19 @@ Context (Mon : monoidal_precat).
 
 Let C := monoidal_precat_precat Mon.
 Let tensor := monoidal_precat_tensor Mon.
-Notation "X ⊗ Y" := (tensor (X , Y)) (at level 31).
-Notation "f #⊗ g" := (# tensor (f #, g)) (at level 31).
+Notation "X ⊗⊗ Y" := (tensor (X , Y)) (at level 31).
+Notation "f #⊗⊗ g" := (# tensor (f #, g)) (at level 31).
 Let I := monoidal_precat_unit Mon.
 Let α' := monoidal_precat_associator Mon.
 Let λ' := monoidal_precat_left_unitor Mon.
 Let ρ' := monoidal_precat_right_unitor Mon.
 
 Definition monoid_ob_data : UU :=
-  ∑ X : C, (X ⊗ X --> X) × (I --> X).
+  ∑ X : C, (X ⊗⊗ X --> X) × (I --> X).
 
-Definition is_monoid_ob (X : C) (μ : X ⊗ X --> X) (η : I --> X) : UU :=
-	(μ #⊗ id X · μ = pr1 α' ((X, X), X) · id X #⊗ μ · μ) × (* Pentagon diagram *)
-	(pr1 λ' X = η #⊗ id X · μ) × (pr1 ρ' X = id X #⊗ η · μ). (* Unitor diagrams *)
+Definition is_monoid_ob (X : C) (μ : X ⊗⊗ X --> X) (η : I --> X) : UU :=
+	(μ #⊗⊗ id X · μ = pr1 α' ((X, X), X) · id X #⊗⊗ μ · μ) × (* Pentagon diagram *)
+	(pr1 λ' X = η #⊗⊗ id X · μ) × (pr1 ρ' X = id X #⊗⊗ η · μ). (* Unitor diagrams *)
 
 Definition monoid_ob : UU :=
 	∑ X : monoid_ob_data, is_monoid_ob (pr1 X) (pr1 (pr2 X)) (pr2 (pr2 X)).
@@ -455,7 +455,7 @@ Definition monoid_mult (X : monoid_ob) := pr1 (pr2 (pr1 X)).
 Definition monoid_unit (X : monoid_ob) := pr2 (pr2 (pr1 X)).
 
 Definition is_monoid_mor (X Y : monoid_ob) (f : monoid_carrier X --> monoid_carrier Y) : UU :=
-	((@monoid_mult X) · f = f #⊗ f · (@monoid_mult Y)) ×
+	((@monoid_mult X) · f = f #⊗⊗ f · (@monoid_mult Y)) ×
   (@monoid_unit X) · f = (@monoid_unit Y).
 
 Definition monoid_mor (X Y : monoid_ob) : UU :=

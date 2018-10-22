@@ -102,8 +102,8 @@ Let tensor := monoidal_precat_tensor Mon.
 Let α' := monoidal_precat_associator Mon.
 Let λ' := monoidal_precat_left_unitor Mon.
 Let ρ' := monoidal_precat_right_unitor Mon.
-Notation "X ⊗ Y" := (tensor (X , Y)) (at level 31).
-Notation "f #⊗ g" := (#tensor (f #, g)) (at level 31).
+Notation "X ⊗⊗ Y" := (tensor (X , Y)) (at level 31).
+Notation "f #⊗⊗ g" := (#tensor (f #, g)) (at level 31).
 
 Context (hs_V : has_homsets V).
 
@@ -118,7 +118,7 @@ Section Coslice_Monoidal.
 
 Definition coslice_precat_sq := coslice_precat ⊠ coslice_precat.
 
-Definition I_to_II : I --> I ⊗ I.
+Definition I_to_II : I --> I ⊗⊗ I.
 Proof.
   exact (nat_iso_to_trans_inv λ' I).
 Defined.
@@ -138,15 +138,15 @@ Definition coslice_tensor_on_ob : ob coslice_precat_sq -> ob coslice_precat.
 Proof.
   (* the map on objects and their morphisms from I *)
   intro xy.
-  exists (⌑⌊xy ⊗ ⌑xy⌋).
-  exact (I_to_II · ↓⌊xy #⊗ ↓xy⌋).
+  exists (⌑⌊xy ⊗⊗ ⌑xy⌋).
+  exact (I_to_II · ↓⌊xy #⊗⊗ ↓xy⌋).
 Defined.
 
 Definition coslice_tensor_on_mor : ∏ xy x'y' : ob coslice_precat_sq, xy --> x'y' -> coslice_tensor_on_ob xy --> coslice_tensor_on_ob x'y'.
 Proof.
   (* the map on morphisms *)
   intros xy x'y' fg.
-  exists (⊸#⌊fg #⊗ ⊸fg⌋#).
+  exists (⊸#⌊fg #⊗⊗ ⊸fg⌋#).
   unfold is_coslice_mor.
   simpl.
   rewrite <- assoc.
@@ -164,7 +164,7 @@ Definition is_functor_coslice_tensor_data : is_functor coslice_tensor_data := di
 
 Definition coslice_tensor : functor coslice_precat_sq coslice_precat := tpair _ coslice_tensor_data is_functor_coslice_tensor_data.
 
-Definition coslice_right_unitor : right_unitor coslice_tensor coslice_I.
+(* Definition coslice_right_unitor : right_unitor coslice_tensor coslice_I.
 Proof.
   use tpair.
   use tpair.
@@ -174,7 +174,7 @@ Proof.
   unfold is_coslice_mor, coslice_tensor_on_ob, coslice_I.
   simpl.
   unfold I_to_II.
-  Check (pr2 ρ' (pr1 x)) (pr2 x).
+  Check (pr2 ρ' (pr1 x)) (pr2 x). *)
 
 Context {coslice_left_unitor : left_unitor coslice_tensor coslice_I} {coslice_right_unitor : right_unitor coslice_tensor coslice_I} {coslice_associator : associator coslice_tensor} {coslice_triangle_eq : triangle_eq coslice_tensor coslice_I coslice_left_unitor coslice_right_unitor
 coslice_associator} {coslice_pentagon_eq : pentagon_eq coslice_tensor coslice_associator}.

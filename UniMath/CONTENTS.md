@@ -344,6 +344,7 @@ The packages and files are listed here in logical order: each file depends only 
    - [ParameterisedFunctorAlgebras.v](MetaSubstitutionSystems/ParameterisedFunctorAlgebras.v)
    - [ActionsAndStrengths.v](MetaSubstitutionSystems/ActionsAndStrengths.v)
    - [SecondOrderAbstractSyntax.v](MetaSubstitutionSystems/SecondOrderAbstractSyntax.v)
+   - [FiniteCardinalsCat.v](MetaSubstitutionSystems/FiniteCardinalsCat.v)
    - [All.v](MetaSubstitutionSystems/All.v)
 ## Package [Folds](Folds/README.md)
    - [UnicodeNotations.v](Folds/UnicodeNotations.v)
