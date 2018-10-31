@@ -204,13 +204,32 @@ Section Cartesian_Monoidal_Category.
 Context (C : precategory).
 Context (bin_prod : BinProducts C) (terminal : Terminal C).
 
-(* FIXME: the following coherence conditions are trivial but tedious. *)
-Definition cartesian_monoidal_coherence : ∑ (λ' : left_unitor (binproduct_functor bin_prod) terminal)
-(ρ' : right_unitor (binproduct_functor bin_prod) terminal)
-(α' : associator (binproduct_functor bin_prod)),
-triangle_eq (binproduct_functor bin_prod) terminal λ' ρ' α'
-× pentagon_eq (binproduct_functor bin_prod) α'.
+(* 1 × - ⟹ Id_C *)
+Definition terminal_premultiply_to_id : nat_iso (I_pretensor (binproduct_functor bin_prod) terminal) (functor_identity C).
 Proof.
+  use tpair.
+  - exists (λ x, BinProductPr2 C (bin_prod terminal x)).
+    exact (λ x x' f, BinProductOfArrowsPr2 C (bin_prod terminal x') (bin_prod terminal x) (id terminal) f).
+  - simpl.
+    admit.
+Admitted.
+
+(* - × 1 ⟹ Id_C *)
+Definition terminal_postmultiply_to_id : nat_iso (I_posttensor (binproduct_functor bin_prod) terminal) (functor_identity C).
+Proof.
+  use tpair.
+  - exists (λ x, BinProductPr1 C (bin_prod x terminal)).
+    exact (λ x x' f, BinProductOfArrowsPr1 C (bin_prod x' terminal) (bin_prod x terminal) f (id terminal)).
+  - simpl.
+    admit.
+Admitted.
+
+(* (- x -) x - ⟹ - x (- x -) *)
+Definition cartesian_associator : nat_iso (assoc_left (binproduct_functor bin_prod)) (assoc_right (binproduct_functor bin_prod)).
+Proof.
+  use tpair.
+  - admit.
+  - admit.
 Admitted.
 
 Definition cartesian_monoidal_precat : monoidal_precat.
@@ -218,7 +237,12 @@ Proof.
   exists C.
   exists (binproduct_functor bin_prod).
   exists terminal.
-  exact cartesian_monoidal_coherence.
-Defined.
+  exists terminal_premultiply_to_id.
+  exists terminal_postmultiply_to_id.
+  exists cartesian_associator.
+  split.
+  - admit.
+  - admit.
+Admitted.
 
 End Cartesian_Monoidal_Category.

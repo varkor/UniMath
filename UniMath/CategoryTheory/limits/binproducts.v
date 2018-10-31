@@ -76,7 +76,7 @@ Proof.
 Defined.
 
 Lemma BinProductPr1Commutes (c d : C) (P : BinProduct c d):
-     ∏ (a : C) (f : a --> c) g, BinProductArrow P f g · BinProductPr1 P = f.
+     ∏ (a : C) (f : a --> c) (g : a --> d), BinProductArrow P f g · BinProductPr1 P = f.
 Proof.
   intros a f g.
   exact (pr1 (pr2 (pr1 (isBinProduct_BinProduct P _ f g)))).
