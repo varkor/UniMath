@@ -4,6 +4,9 @@ Require Import UniMath.CategoryTheory.functor_categories.
 Require Import UniMath.CategoryTheory.Monads.Monads.
 Require Import UniMath.CategoryTheory.limits.binproducts.
 Require Import UniMath.CategoryTheory.limits.bincoproducts.
+Require Import UniMath.CategoryTheory.limits.initial.
+Require Import UniMath.CategoryTheory.limits.graphs.colimits.
+Require Import UniMath.CategoryTheory.Chains.Chains.
 Require Import UniMath.CategoryTheory.Monoidal.Actions.
 Require Import UniMath.CategoryTheory.Monoidal.Strengths.
 
@@ -19,10 +22,10 @@ Definition dom {X Y : C} (f : X --> Y) := X.
 Definition codom {X Y : C} (f : X --> Y) := Y.
 
 Local Notation "X ⨰ Y" := (BinProductObject _ (bin_prod X Y)) (at level 31).
-Local Notation "f #⨰ g" := (BinProductOfArrows C (bin_prod (codom f) (codom g)) (bin_prod (dom f) (dom g)) f g) (at level 41).
+Local Notation "f #⨰ g" := (BinProductOfArrows C (bin_prod (codom f) (codom g)) (bin_prod (dom f) (dom g)) f g) (at level 31).
 
 Local Notation "X ∔ Y" := (BinCoproductObject _ (bin_coprod X Y)) (at level 32).
-Local Notation "f #∔ g" := (BinCoproductOfArrows C (bin_coprod (dom f) (dom g)) (bin_coprod (codom f) (codom g)) f g) (at level 41).
+Local Notation "f #∔ g" := (BinCoproductOfArrows C (bin_coprod (dom f) (dom g)) (bin_coprod (codom f) (codom g)) f g) (at level 32).
 
 Section Exponentials.
 
@@ -74,3 +77,10 @@ Proof.
     · (μ T S) (* TS *)
   ).
 Defined.
+
+(* Plotkin's axiom *)
+
+Definition μ {C : precategory} (initial : Initial C) (F : C ⟶ C) :=
+  ColimCocone (initChain initial F).
+
+Definition Plotkin's_Axiom (C D : precategory) (initial_C : Initial C) (initial_D : Initial D) (F : C ⟶ C) (G : D ⟶ D) (H : C ⟶ D) (* preserves basepoints *) : μ _ G ⟹ H (μ _ F).
