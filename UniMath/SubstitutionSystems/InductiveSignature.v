@@ -80,3 +80,16 @@ Compute mult (Var _ a) (Var _ b).
   | μΣ sm => (*ϕ (Σ_map σ (s (TensorPair _ _ sm p)))*) ϵ p
   | Metavar (TensorPair _ _ mv x) => κ (TensorPair _ _ mv (σ (TensorPair _ _ x p)))
   end. *)
+
+(* A single level of the untyped λ-calculus with no free variables. *)
+Inductive Σ (V : UU) : UU :=
+  | Abs : Option V -> Σ V
+  | App : V -> V -> Σ V
+  .
+
+(* The untyped λ-calculus with variables and metavariables as an inductive type (i.e. the initial algebra of the functor Δ). *)
+Inductive Δμ : UU :=
+  | (* ɛ *) Var : I -> Δμ
+  | (* φ *) μΣ : Σ Δμ -> Δμ
+  | (* ϰ *) Metavar : Tensor M Δμ -> Δμ
+  .
