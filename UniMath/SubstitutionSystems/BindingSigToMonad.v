@@ -199,6 +199,8 @@ use colimAlgInitial.
 - apply ColimsFunctorCategory_of_shape, CLC.
 Defined.
 
+Check constprod_functor1.
+
 (** ** Construction of datatype specified by a binding signature *)
 Definition DatatypeOfBindingSig
   (IC : Initial C) (TC : Terminal C) (CLC : Colims_of_shape nat_graph C)
