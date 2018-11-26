@@ -27,11 +27,11 @@ Inductive Σ (T : UU -> UU) (V : UU) : UU :=
   | Abs : T (Option V) -> Σ T V
   | App : (T V) -> (T V) -> Σ T V
   .
-Definition Σ_map {A B : UU} (T : UU -> UU) (f : A -> B) (s : Σ T A) : Σ T B :=
+(* Definition Σ_map {A B : UU} (T : UU -> UU) (f : A -> B) (s : Σ T A) : Σ T B :=
   match s with
   | Abs _ _ o => Abs _ _ (Option_map o f)
   | App _ _ v1 v2 => App _ _ (f v1) (f v2)
-  end.
+  end. *)
 
 (* The untyped λ-calculus with variables and metavariables as an inductive type (i.e. the initial algebra of the functor (ΔI + Σ + M ⊗)). *)
 Inductive μ (V : UU) : UU :=
@@ -65,6 +65,8 @@ Fixpoint σ (m : μ I) (p : P) {struct m} : A :=
   end.
 
 End Parameterised_Initiality.
+
+Check σ.
 
 Definition mult := σ (μ I) (μ I) (λ m, m) (Metavar _) (* should need φ too *).
 Check mult.

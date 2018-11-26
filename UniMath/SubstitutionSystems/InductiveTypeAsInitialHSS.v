@@ -8,10 +8,14 @@ Require Import UniMath.CategoryTheory.categories.category_hset_structures.
 Require Import UniMath.SubstitutionSystems.Signatures.
 Require Import UniMath.SubstitutionSystems.LamSignature.
 Require Import UniMath.CategoryTheory.limits.initial.
+Require Import UniMath.CategoryTheory.limits.graphs.colimits.
 Require Import UniMath.SubstitutionSystems.LamFromBindingSig.
 Require Import UniMath.CategoryTheory.limits.bincoproducts.
 Require Import UniMath.CategoryTheory.FunctorAlgebras.
 Require Import UniMath.CategoryTheory.PointedFunctors.
+Require Import UniMath.SubstitutionSystems.LiftingInitial_alt.
+Require Import UniMath.CategoryTheory.Chains.Chains.
+Require Import UniMath.SubstitutionSystems.GenMendlerIteration_alt.
 
 (*Require Import UniMath.SubstitutionSystems.LiftingInitial_alt.
 Require Import UniMath.SubstitutionSystems.BindingSigToMonad.
@@ -97,11 +101,12 @@ Fixpoint TermSize {Γ : UU} (t : Term IdVar Γ) {struct t} : nat :=
 
 with SigSize {Γ : UU} (s : Σ (Term IdVar) Γ) {struct s} : nat :=
   match s with
-  | Abs _ _ pt => 1(*TermSize pt*)
+  | Abs _ _ pt => (*TermSize pt*) 1
   | App _ _ t1 t2 => (*add 1 (add (TermSize t1) (TermSize t2))*) 1
   end.
 
-Definition TermMap {Γ Γ' : UU} (ρ : Γ -> Γ') (t : Term IdVar Γ) := TermMap' (TermSize t) ρ t.
+Definition TermMap {Γ Γ' : UU} (ρ : Γ -> Γ') (t : Term IdVar Γ) : Term IdVar Γ' := TermMap' (TermSize t) ρ t.
+Definition SigMap {Γ Γ' : UU} (ρ : Γ -> Γ') (s : Σ (Term IdVar) Γ) : Σ (Term IdVar) Γ' := SigMap' (SigSize s) ρ s.
 
 (* Taken from `LamHSET.v`. *)
 Let Lam_S : Signature HSET has_homsets_HSET _ _ :=
@@ -158,9 +163,140 @@ Proof.
   exact NatTran_Id_H_TermFunctor_to_TermFunctor.
 Defined.
 
+(* Context (Γ : UU).
+Context (σ : Term IdVar (Term IdVar Γ) -> Term IdVar Γ).
+
+Check SigMap σ. *)
+
+Definition cocontinuous (A : UU -> UU) {Γ Γ' : UU} (_ : A (Γ ⨿ Γ')) := A Γ ⨿ A Γ'.
+
+Fixpoint Term_cocont (Γ Γ' : UU) (t : Term IdVar (Γ ⨿ Γ')) : @cocontinuous (Term IdVar) Γ Γ' t.
+Proof.
+  unfold cocontinuous.
+  destruct t as [v | s].
+  - unfold IdVar in v.
+    destruct v as [ctx | ctx].
+    + exact (inl (Var _ _ ctx)).
+    + exact (inr (Var _ _ ctx)).
+  - destruct s as [? | t1 t2].
+    + destruct (Term_cocont _ _ t).
+      * admit.
+      * exact (Term_cocont _ _ t0).
+    + destruct (Term_cocont _ _ t1), (Term_cocont _ _ t2).
+      * exact (inl (Sig _ _ (App _ _ t t0))).
+      (* umm... true, but... *)
+      * exact unreachable.
+      * exact unreachable.
+      * exact (inr (Sig _ _ (App _ _ t t0))).
+Defined.
+
+Definition st (A B : UU -> UU) (A_cocont : cocontinuous A) (Γ : UU) (term : Σ A (B Γ)) : Σ (λ X, A (B X)) Γ.
+Proof.
+  destruct term as [z | x y].
+  - destruct (A_cocont _ _ z).
+    + (*exact (Abs _ _ a).*)
+  admit.
+    + admit.
+  - exact (App _ _ x y).
+Admitted.
+
+Section Parameterised_Initiality.
+
+Context (A P : UU -> UU).
+Context (ϵ : ∏ (Γ : UU), P Γ -> A Γ).
+Context (ϕ : ∏ (Γ : UU), Σ A Γ -> A Γ).
+
+Check SigMap.
+
+(* need to define the strength *)
+Context (st : ∏ (A B : UU -> UU), ∏ (Γ : UU), Σ A (B Γ) -> Σ (λ X, A (B X)) Γ).
+
+(* need to define the functorial map *)
+Context (SM : ∏ (Γ : UU), ∏ (A B : UU -> UU), (A Γ -> B Γ) -> Σ A Γ -> Σ B Γ).
+
+Fixpoint σ' (size : nat) (Γ : UU) (t : Term IdVar (P Γ)) {struct size} : A Γ :=
+  match size with
+  | O => unreachable
+  | S n => match t with
+    | Var _ _ p => ϵ Γ p
+    | Sig _ _ s => ϕ Γ (SM Γ (λ X, (Term IdVar) (P X)) A (λ tpg, σ' n Γ tpg) (st (Term IdVar) P Γ s))
+    end
+  end.
+
+
+(*
+Context (st : ∏ (Γ : UU), Σ (Term IdVar) (P Γ) -> Σ (Term IdVar) (Term IdVar (P Γ))).
+Fixpoint σ' (size : nat) (Γ : UU) (t : Term IdVar (P Γ)) {struct size} : A Γ :=
+  match size with
+  | O => unreachable
+  | S n => match t with
+    | Var _ _ p => ϵ Γ p
+    | Sig _ _ s => ϕ Γ (SigMap (λ tp, σ' n Γ tp) (st Γ s))
+    end
+  end. *)
+
+(* Fixpoint σ' (size : nat) (Γ : UU) (t : Term IdVar (P Γ)) {struct size} : A Γ :=
+  match size with
+  | O => unreachable
+  | S n => match t with
+    | Var _ _ p => ϵ Γ p
+    | Sig _ _ s => ϕ Γ (((
+
+      SigMap ((λ tp, σ' n Γ tp) : (Term IdVar) (P Γ) -> A Γ)
+
+
+      : Σ (Term IdVar) ((Term IdVar) (P Γ)) -> Σ (Term IdVar) (A Γ)
+
+
+
+      ) ((st Γ s) : Σ (Term IdVar) ((Term IdVar) (P Γ)))) : Σ (Term IdVar) (A Γ))
+    end
+  end. *)
+
+Definition σ (Γ : UU) (t : Term IdVar (P Γ)) : A Γ := σ' (TermSize t) Γ t.
+
+End Parameterised_Initiality.
+
+
+
+Context (SMAP : ∏ (Γ Γ' : UU), ((Term IdVar) Γ -> (Term IdVar) Γ') -> (Σ (Term IdVar) Γ) -> Σ (Term IdVar) Γ').
+
+Check SigMap.
+Check TermMap.
+
+(* usually Γ = Term IdVar Γ' *)
+Fixpoint σ {Γ : UU} (t : Term IdVar Γ) {struct t} : Γ :=
+match t with
+| Var _ _ v => v
+| Sig _ _ s => SigMap unreachable unreachable
+end.
+
+Fixpoint σ {Γ : UU} (t : Term IdVar (Term IdVar Γ)) {struct t} : Term IdVar Γ :=
+  match t with
+  | Var _ _ v => v
+  | Sig _ _ s => Sig IdVar Γ (SMAP (Term IdVar Γ) Γ unreachable unreachable : Σ (Term IdVar) Γ)
+  end.
+
+(* Fixpoint σ {Γ : UU} (t : Term IdVar (Term IdVar Γ)) {struct t} : Term IdVar Γ :=
+  match t with
+  | Var _ _ v => v
+  | Sig _ _ s => Sig IdVar Γ (SMAP (Term IdVar) (Term IdVar (Term IdVar Γ)) (Term IdVar Γ) unreachable unreachable : Σ (Term IdVar) Γ)
+  end. *)
+
+(* it would be great if we could use SpecializedGMIt to define this subtitution automatically using the fact that inductive types are the limits of ω-chains... but that's tricky *)
 Definition subst (S : HSET) (t : Term IdVar (Term IdVar (hset_to_type S))) : Term IdVar (hset_to_type S).
 (* this is the substitution we need to define *)
 Admitted.
+
+(* defined in LambdaCalculus.v *)
+Local Definition CCHSET : Colims_of_shape nat_graph HSET :=
+ColimsHSET_of_shape nat_graph.
+
+(* uses a predefined InitAlg that is hardcoded -- we want to use an arbitrary initial object here *)
+Check bracket_Thm15 HSET has_homsets_HSET BinCoproductsHSET InitialHSET CCHSET LamSignature.
+
+(* seems reasonable, but still uses Amadek's construction rather than an arbitrary initial object *)
+Check It has_homsets_HSET InitialHSET CCHSET.
 
 (* a natural transformation from the composite of a pointed functor with TermFunctor to TermFunctor *)
 Definition pointed_term_composite_to_term_data (Z : precategory_Ptd HSET has_homsets_HSET) (f : Z --> ptd_from_alg IHTFTF_alg) : nat_trans_data (functor_composite (functor_from_ptd_obj _ Z) TermFunctor) TermFunctor.

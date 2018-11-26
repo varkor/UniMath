@@ -28,7 +28,7 @@ Require Import UniMath.CategoryTheory.FunctorAlgebras.
 Require Import UniMath.CategoryTheory.categories.category_hset.
 Require Import UniMath.CategoryTheory.opp_precat.
 Require Import UniMath.CategoryTheory.Chains.Chains.
-(* Require Import UniMath.CategoryTheory.Chains.Adamek. *)
+Require Import UniMath.CategoryTheory.Chains.Adamek.
 Require Import UniMath.CategoryTheory.yoneda.
 Require Import UniMath.CategoryTheory.HorizontalComposition.
 Require Import UniMath.CategoryTheory.whiskering.
@@ -55,11 +55,14 @@ Local Notation "0" := (InitialObject IC).
 
 Let AF := FunctorAlg F hsC.
 Let chnF := initChain IC F.
-Let μF_Initial : Initial AF := colimAlgInitial hsC IC HF (CC chnF).
+Variable μF_Initial : Initial AF.
+(* Let μF_Initial : Initial AF := colimAlgInitial hsC IC HF (CC chnF). *)
 Let μF : C := alg_carrier _ (InitialObject μF_Initial).
 Let inF : C⟦F μF,μF⟧ := alg_map _ (InitialObject μF_Initial).
-Let e : ∏ (n : nat), C⟦iter_functor F n IC,μF⟧ := colimIn (CC chnF).
-Let cocone_μF : cocone chnF μF := colimCocone (CC chnF).
+Variable e : ∏ (n : nat), C⟦iter_functor F n IC,μF⟧.
+(* Let e : ∏ (n : nat), C⟦iter_functor F n IC,μF⟧ := colimIn (CC chnF). *)
+Variable cocone_μF : cocone chnF μF.
+(* Let cocone_μF : cocone chnF μF := colimCocone (CC chnF). *)
 
 Local Lemma e_comm (n : nat) : e (S n) = # F (e n) · inF.
 Proof.
