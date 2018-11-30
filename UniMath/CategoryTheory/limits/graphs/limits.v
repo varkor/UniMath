@@ -581,23 +581,10 @@ Section lim_def.
 
 Context {C : precategory} (hsC : has_homsets C).
 
-(* A cone with tip c over a diagram d *)
-(*
-Definition cocone {g : graph} (d : diagram g C) (c : C) : UU :=
-  ∑ (f : ∏ (v : vertex g), C⟦dob d v,c⟧),
-    ∏ (u v : vertex g) (e : edge u v), dmor d e · f v = f u.
-*)
-
 Definition opp_diagram g C := diagram g C^op.
 
 Definition cone {g : graph} (d : diagram g C^op) (c : C) : UU :=
   @cocone C^op g d c.
-
-(*
-Definition mk_cocone {g : graph} {d : diagram g C} {c : C}
-  (f : ∏ v, C⟦dob d v,c⟧) (Hf : ∏ u v e, dmor d e · f v = f u) :
-  cocone d c := tpair _ f Hf.
-*)
 
 Definition mk_cone {g : graph} {d : diagram g C^op} {c : C}
   (f : ∏ v, C⟦c, dob d v⟧) (Hf : ∏ u v (e : edge u v) , f v · dmor d e  = f u) :
