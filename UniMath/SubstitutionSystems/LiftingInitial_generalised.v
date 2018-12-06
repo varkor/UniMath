@@ -86,7 +86,9 @@ apply is_omega_cocont_BinCoproduct_of_functors; try apply functor_category_has_h
 - apply HH.
 Defined.
 
-Definition InitAlg : Alg := μF_Initial hsEndC InitialEndC Id_H is_omega_cocont_Id_H.
+Context (ALG : algebra_ob Id_H).
+
+Definition InitAlg : Alg := μF_Initial hsEndC InitialEndC Id_H is_omega_cocont_Id_H ALG.
 
 Lemma isInitial_pre_comp (Z : Ptd) : isInitial [C, C, hsC] (ℓ (U Z) InitialEndC).
 Proof.
@@ -111,7 +113,7 @@ Definition SpecializedGMIt (Z : Ptd) (X : EndC) :
   ∃! h : [C, C, hsC] ⟦ ℓ (U Z) (alg_carrier _ InitAlg), X ⟧,
     # (ℓ (U Z)) (alg_map Id_H InitAlg) · h =
     θ (alg_carrier _ InitAlg) · # G h · ρ
-  := SpecialGenMendlerIteration hsEndC InitialEndC Id_H is_omega_cocont_Id_H hsEndC X (ℓ (U Z)) (isInitial_pre_comp Z) (HU Z).
+  := SpecialGenMendlerIteration hsEndC InitialEndC Id_H is_omega_cocont_Id_H ALG hsEndC X (ℓ (U Z)) (isInitial_pre_comp Z) (HU Z).
 
 Definition θ_in_first_arg (Z: Ptd)
   : functor_fix_snd_arg [C, C,hsC] Ptd [C, C, hsC] (θ_source H) Z
@@ -477,7 +479,7 @@ use tpair.
             apply pathsinv0, assoc).
 Defined.
 
-Let IA := μF_Initial hsEndC InitialEndC Id_H is_omega_cocont_Id_H.
+Let IA := μF_Initial hsEndC InitialEndC Id_H is_omega_cocont_Id_H ALG.
 
 Lemma ishssMor_InitAlg (T' : hss CP H) :
   @ishssMor C hsC CP H InitHSS T'
@@ -491,7 +493,7 @@ set (rhohat := BinCoproductArrow EndC  (CPEndC _ _ )  β (tau_from_alg T')
 set (X:= SpecializedGMIt Z _ Ghat rhohat (thetahat Z f)).
 intermediate_path (pr1 (pr1 X)).
 - set (TT := @fusion_law EndC hsEndC InitialEndC
-                         Id_H is_omega_cocont_Id_H _ hsEndC (pr1 (InitAlg)) T').
+                         Id_H is_omega_cocont_Id_H ALG _ hsEndC (pr1 (InitAlg)) T').
   set (Psi := ψ_from_comps (Id_H) hsEndC _ (ℓ (U Z)) (Const_plus_H (U Z)) (ρ_Thm15 Z f)
                              (aux_iso_1 Z · θ'_Thm15 Z · aux_iso_2_inv Z) ).
   set (T2 := TT _ (HU Z) (isInitial_pre_comp Z) Psi).

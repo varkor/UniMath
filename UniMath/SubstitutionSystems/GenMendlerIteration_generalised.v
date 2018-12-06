@@ -60,7 +60,7 @@ Local Notation "0" := (InitialObject IC).
 Let AF := FunctorAlg F hsC.
 Let chnF := initChain IC F.
 
-Definition ALG : algebra_ob F. exact admitted. Qed.
+Context (ALG : algebra_ob F).
 
 Definition CC_chnF : ColimCocone chnF.
 Proof.

@@ -40,14 +40,14 @@ Require Import UniMath.CategoryTheory.Chains.All.
 
 Section LamHSET.
 
-Let Lam_S : Signature HSET has_homsets_HSET _ _ :=
+Definition Lam_S : Signature HSET has_homsets_HSET _ _ :=
   Lam_Sig HSET has_homsets_HSET TerminalHSET BinCoproductsHSET BinProductsHSET.
 
 Local Notation "'EndHSET'":= ([HSET, HSET, has_homsets_HSET]) .
 
 Let hsEndC : has_homsets EndHSET := functor_category_has_homsets _ _ has_homsets_HSET.
 
-Local Lemma is_omega_cocont_Lam_S : is_omega_cocont Lam_S.
+Lemma is_omega_cocont_Lam_S : is_omega_cocont Lam_S.
 Proof.
 apply is_omega_cocont_Lam.
 * apply is_omega_cocont_constprod_functor1.
