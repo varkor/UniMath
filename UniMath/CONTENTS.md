@@ -343,6 +343,7 @@ The packages and files are listed here in logical order: each file depends only 
    - [MonadsFromSubstitutionSystems.v](SubstitutionSystems/MonadsFromSubstitutionSystems.v)
    - [GenMendlerIteration.v](SubstitutionSystems/GenMendlerIteration.v)
    - [GenMendlerIteration_alt.v](SubstitutionSystems/GenMendlerIteration_alt.v)
+   - [GenMendlerIteration_generalised.v](SubstitutionSystems/GenMendlerIteration_generalised.v)
    - [LiftingInitial.v](SubstitutionSystems/LiftingInitial.v)
    - [LiftingInitial_alt.v](SubstitutionSystems/LiftingInitial_alt.v)
    - [ModulesFromSignatures.v](SubstitutionSystems/ModulesFromSignatures.v)

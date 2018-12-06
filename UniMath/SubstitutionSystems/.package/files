@@ -7,6 +7,7 @@ SubstitutionSystems.v
 MonadsFromSubstitutionSystems.v
 GenMendlerIteration.v
 GenMendlerIteration_alt.v
+GenMendlerIteration_generalised.v
 LiftingInitial.v
 LiftingInitial_alt.v
 ModulesFromSignatures.v

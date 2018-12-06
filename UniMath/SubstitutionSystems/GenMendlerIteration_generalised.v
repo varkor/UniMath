@@ -17,6 +17,7 @@ Based on a note by Ralph Matthes.
 ************************************************************)
 
 Require Import UniMath.Foundations.PartD.
+Require Import UniMath.Foundations.NaturalNumbers.
 
 Require Import UniMath.MoreFoundations.Tactics.
 
@@ -28,12 +29,15 @@ Require Import UniMath.CategoryTheory.FunctorAlgebras.
 Require Import UniMath.CategoryTheory.categories.HSET.Core.
 Require Import UniMath.CategoryTheory.opp_precat.
 Require Import UniMath.CategoryTheory.Chains.Chains.
+Require Import UniMath.CategoryTheory.Chains.Cochains.
 Require Import UniMath.CategoryTheory.Chains.Adamek.
 Require Import UniMath.CategoryTheory.yoneda.
 Require Import UniMath.CategoryTheory.HorizontalComposition.
 Require Import UniMath.CategoryTheory.whiskering.
 
 Local Open Scope cat.
+
+Definition admitted {T : UU} : T. Admitted.
 
 Arguments functor_composite {_ _ _} _ _ .
 Arguments nat_trans_comp {_ _ _ _ _} _ _ .
@@ -55,17 +59,36 @@ Local Notation "0" := (InitialObject IC).
 
 Let AF := FunctorAlg F hsC.
 Let chnF := initChain IC F.
-Let μF_Initial : Initial AF := colimAlgInitial hsC IC HF (CC chnF).
+
+Definition ALG_OB : C. Proof. exact admitted. Qed.
+Definition ALG_MAP : F ALG_OB --> ALG_OB. Proof. exact admitted. Qed.
+
+Definition CC_chnF : ColimCocone chnF.
+Proof.
+  use tpair.
+  - exists ALG_OB.
+    unfold cocone.
+    use tpair.
+    + intro n.
+      induction n as [| m].
+      * exact (InitialArrow IC ALG_OB).
+      * exact (#(iter_functor F (S m)) (InitialArrow IC ALG_OB) · cochain_mor (algCochain ALG_OB F ALG_MAP) (natgthsn0 m)).
+    + exact admitted.
+  - (* isColimCocone chnF μF ...*)
+  exact admitted.
+Defined.
+
+Let μF_Initial : Initial AF := colimAlgInitial hsC IC HF CC_chnF.
 Let μF : C := alg_carrier _ (InitialObject μF_Initial).
 Let inF : C⟦F μF,μF⟧ := alg_map _ (InitialObject μF_Initial).
-Let e : ∏ (n : nat), C⟦iter_functor F n IC,μF⟧ := colimIn (CC chnF).
-Let cocone_μF : cocone chnF μF := colimCocone (CC chnF).
+Let e : ∏ (n : nat), C ⟦iter_functor F n IC, μF⟧ := colimIn CC_chnF.
+Let cocone_μF : cocone chnF μF := colimCocone CC_chnF.
 
 Local Lemma e_comm (n : nat) : e (S n) = # F (e n) · inF.
 Proof.
 apply pathsinv0,
       (colimArrowCommutes (mk_ColimCocone _ _ _ (HF _ _ _
-                          (isColimCocone_from_ColimCocone (CC chnF))))).
+                          (isColimCocone_from_ColimCocone CC_chnF)))).
 Qed.
 
 Context {D : precategory} (hsD : has_homsets D).
@@ -126,7 +149,7 @@ Proof.
 use mk_ColimCocone.
 - apply (L μF).
 - apply (mapcocone L _ cocone_μF).
-- apply HL, (isColimCocone_from_ColimCocone (CC chnF)).
+- apply HL, (isColimCocone_from_ColimCocone (CC_chnF)).
 Defined.
 
 Definition preIt : D⟦L μF,X⟧ := colimArrow CC_LchnF X Pow_cocone.

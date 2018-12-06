@@ -8,6 +8,7 @@ Require Export UniMath.SubstitutionSystems.SubstitutionSystems.
 Require Export UniMath.SubstitutionSystems.MonadsFromSubstitutionSystems.
 Require Export UniMath.SubstitutionSystems.GenMendlerIteration.
 Require Export UniMath.SubstitutionSystems.GenMendlerIteration_alt.
+Require Export UniMath.SubstitutionSystems.GenMendlerIteration_generalised.
 Require Export UniMath.SubstitutionSystems.LiftingInitial.
 Require Export UniMath.SubstitutionSystems.LiftingInitial_alt.
 Require Export UniMath.SubstitutionSystems.ModulesFromSignatures.
