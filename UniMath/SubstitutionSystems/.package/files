@@ -10,6 +10,7 @@ GenMendlerIteration_alt.v
 GenMendlerIteration_generalised.v
 LiftingInitial.v
 LiftingInitial_alt.v
+LiftingInitial_generalised.v
 ModulesFromSignatures.v
 LamSignature.v
 Lam.v

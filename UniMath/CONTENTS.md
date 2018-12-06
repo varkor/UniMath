@@ -346,6 +346,7 @@ The packages and files are listed here in logical order: each file depends only 
    - [GenMendlerIteration_generalised.v](SubstitutionSystems/GenMendlerIteration_generalised.v)
    - [LiftingInitial.v](SubstitutionSystems/LiftingInitial.v)
    - [LiftingInitial_alt.v](SubstitutionSystems/LiftingInitial_alt.v)
+   - [LiftingInitial_generalised.v](SubstitutionSystems/LiftingInitial_generalised.v)
    - [ModulesFromSignatures.v](SubstitutionSystems/ModulesFromSignatures.v)
    - [LamSignature.v](SubstitutionSystems/LamSignature.v)
    - [Lam.v](SubstitutionSystems/Lam.v)

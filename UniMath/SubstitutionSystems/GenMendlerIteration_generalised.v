@@ -77,7 +77,7 @@ Proof.
   exact admitted.
 Defined.
 
-Let μF_Initial : Initial AF := colimAlgInitial hsC IC HF CC_chnF.
+Definition μF_Initial : Initial AF := colimAlgInitial hsC IC HF CC_chnF.
 Let μF : C := alg_carrier _ (InitialObject μF_Initial).
 Let inF : C⟦F μF,μF⟧ := alg_map _ (InitialObject μF_Initial).
 Let e : ∏ (n : nat), C ⟦iter_functor F n IC, μF⟧ := colimIn CC_chnF.

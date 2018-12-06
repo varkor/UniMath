@@ -11,6 +11,7 @@ Require Export UniMath.SubstitutionSystems.GenMendlerIteration_alt.
 Require Export UniMath.SubstitutionSystems.GenMendlerIteration_generalised.
 Require Export UniMath.SubstitutionSystems.LiftingInitial.
 Require Export UniMath.SubstitutionSystems.LiftingInitial_alt.
+Require Export UniMath.SubstitutionSystems.LiftingInitial_generalised.
 Require Export UniMath.SubstitutionSystems.ModulesFromSignatures.
 Require Export UniMath.SubstitutionSystems.LamSignature.
 Require Export UniMath.SubstitutionSystems.Lam.
