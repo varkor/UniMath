@@ -11,6 +11,7 @@ Require Import UniMath.CategoryTheory.functor_categories.
 Require Import UniMath.CategoryTheory.limits.graphs.colimits.
 Require Import UniMath.CategoryTheory.limits.graphs.limits.
 Require Import UniMath.CategoryTheory.limits.terminal.
+Require Import UniMath.CategoryTheory.FunctorAlgebras.
 
 Local Open Scope cat.
 
@@ -73,12 +74,12 @@ Defined.
      A <----- F A <------ F^2 A <-------- F^3 A <--- ...
 >>
 *)
-Definition algCochain {C : precategory} (A : C) (F : functor C C) (α : F A --> A) : cochain C.
+Definition algCochain {C : precategory} {F : C ⟶ C} (A : algebra_ob F) : cochain C.
 Proof.
   use cochain_weq; use tpair.
-  - exact (λ m, iter_functor F m A).
+  - exact (λ m, iter_functor F m (alg_carrier _ A)).
   - intros n; induction n as [|n IHn].
-    * exact α.
+    * exact (alg_map _ A).
     * exact (# F IHn).
 Defined.
 
@@ -88,4 +89,9 @@ Defined.
      1 <----- F 1 <------ F^2 1 <-------- F^3 1 <--- ...
 >>
 *)
-Definition termCochain {C : precategory} (TermC : Terminal C) (F : functor C C) : cochain C := algCochain (TerminalObject TermC) F (TerminalArrow TermC (F (TerminalObject TermC))).
+Definition termCochain {C : precategory} (TermC : Terminal C) (F : functor C C) : cochain C.
+Proof.
+  apply (@algCochain _ F).
+  exists (TerminalObject TermC).
+  apply TerminalArrow.
+Defined.

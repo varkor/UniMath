@@ -60,19 +60,18 @@ Local Notation "0" := (InitialObject IC).
 Let AF := FunctorAlg F hsC.
 Let chnF := initChain IC F.
 
-Definition ALG_OB : C. Proof. exact admitted. Qed.
-Definition ALG_MAP : F ALG_OB --> ALG_OB. Proof. exact admitted. Qed.
+Definition ALG : algebra_ob F. exact admitted. Qed.
 
 Definition CC_chnF : ColimCocone chnF.
 Proof.
   use tpair.
-  - exists ALG_OB.
+  - exists (alg_carrier _ ALG).
     unfold cocone.
     use tpair.
     + intro n.
       induction n as [| m].
-      * exact (InitialArrow IC ALG_OB).
-      * exact (#(iter_functor F (S m)) (InitialArrow IC ALG_OB) · cochain_mor (algCochain ALG_OB F ALG_MAP) (natgthsn0 m)).
+      * exact (InitialArrow IC (alg_carrier _ ALG)).
+      * exact (#(iter_functor F (S m)) (InitialArrow IC (alg_carrier _ ALG)) · cochain_mor (algCochain ALG) (natgthsn0 m)).
     + exact admitted.
   - (* isColimCocone chnF μF ...*)
   exact admitted.
