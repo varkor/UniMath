@@ -69,16 +69,23 @@ Defined.
 
 (** Construct the cochain:
 <<
+          α          Fα            F^2 α
+     A <----- F A <------ F^2 A <-------- F^3 A <--- ...
+>>
+*)
+Definition algCochain {C : precategory} (A : C) (F : functor C C) (α : F A --> A) : cochain C.
+Proof.
+  use cochain_weq; use tpair.
+  - exact (λ m, iter_functor F m A).
+  - intros n; induction n as [|n IHn].
+    * exact α.
+    * exact (# F IHn).
+Defined.
+
+(** Construct the cochain:
+<<
          !          F!            F^2 !
      1 <----- F 1 <------ F^2 1 <-------- F^3 1 <--- ...
 >>
 *)
-Definition termCochain {C : precategory} (TermC : Terminal C) (F : functor C C) :
-  cochain C.
-Proof.
-  use cochain_weq; use tpair.
-  - exact (λ m, iter_functor F m TermC).
-  - intros n; induction n as [|n IHn].
-    * exact (TerminalArrow TermC _).
-    * exact (# F IHn).
-Defined.
+Definition termCochain {C : precategory} (TermC : Terminal C) (F : functor C C) : cochain C := algCochain (TerminalObject TermC) F (TerminalArrow TermC (F (TerminalObject TermC))).
