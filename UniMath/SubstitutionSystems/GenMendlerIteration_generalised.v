@@ -72,7 +72,8 @@ Proof.
       induction n as [| m].
       * exact (InitialArrow IC (alg_carrier _ ALG)).
       * exact (#(iter_functor F (S m)) (InitialArrow IC (alg_carrier _ ALG)) · cochain_mor (algCochain ALG) (natgthsn0 m)).
-    + exact admitted.
+    + intros u v e.
+    exact admitted.
   - (* isColimCocone chnF μF ...*)
   exact admitted.
 Defined.

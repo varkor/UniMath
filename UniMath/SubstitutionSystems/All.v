@@ -27,3 +27,4 @@ Require Export UniMath.SubstitutionSystems.MonadsMultiSorted.
 Require Export UniMath.SubstitutionSystems.MultiSorted.
 Require Export UniMath.SubstitutionSystems.STLC.
 Require Export UniMath.SubstitutionSystems.CCS.
+Require Export UniMath.SubstitutionSystems.InductiveInitialHSS.

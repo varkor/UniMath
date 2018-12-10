@@ -26,3 +26,4 @@ MonadsMultiSorted.v
 MultiSorted.v
 STLC.v
 CCS.v
+InductiveInitialHSS.v

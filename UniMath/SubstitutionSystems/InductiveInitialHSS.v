@@ -144,3 +144,37 @@ use Monad_from_hss.
 - apply Lam_S.
 - apply LamHSS_Initial_HSET.
 Defined.
+
+(* Check LamMonad.
+
+Check μ LamMonad.
+Check pr2 (pr1 LamMonad) emptyHSET. *)
+
+(* λ x. x *)
+Let lambda_x_x := Sig IdVar ∅ (Abs _ _ (Var _ _ (inl tt))).
+
+(* λ x. x *)
+Let lambda_z_z := Sig IdVar (Term IdVar ∅) (Abs _ _ (Var _ _ (inl tt))).
+
+(* [λ x. [λ z. x] x] *)
+Let lambda_x_z_x_x := Sig IdVar (Term IdVar ∅)
+  (Abs _ _ (Sig _ _ (App _ _ (Sig _ _ (Abs _ _ (Var _ _ (inl tt)))) (Var _ _ (inl tt))))
+  ).
+
+Eval vm_compute in lambda_x_z_x_x.
+
+Compute lambda_x_z_x_x.
+
+(* Check μ LamMonad emptyHSET (lambda_x_z_x_x). *)
+
+Check unit.
+
+Definition compute_monad := hset_to_type (μ LamMonad emptyHSET (lambda_z_z)).
+
+Check compute_monad.
+
+(* Eval vm_compute in (μ LamMonad emptyHSET (lambda_z_z)). *)
+
+(* Eval vm_compute in (μ LamMonad emptyHSET (lambda_x_z_x_x)). *)
+
+(* Compute (μ LamMonad emptyHSET (lambda_x_z_x_x)). *)

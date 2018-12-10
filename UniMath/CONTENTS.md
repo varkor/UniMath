@@ -362,6 +362,7 @@ The packages and files are listed here in logical order: each file depends only 
    - [MultiSorted.v](SubstitutionSystems/MultiSorted.v)
    - [STLC.v](SubstitutionSystems/STLC.v)
    - [CCS.v](SubstitutionSystems/CCS.v)
+   - [InductiveInitialHSS.v](SubstitutionSystems/InductiveInitialHSS.v)
    - [All.v](SubstitutionSystems/All.v)
 ## Package [Folds](Folds/README.md)
    - [UnicodeNotations.v](Folds/UnicodeNotations.v)

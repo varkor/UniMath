@@ -23,3 +23,10 @@
 .vscode
 _CoqProject
 *.zip
+# Ignore files produced by `Extraction` in Coq.
+/_build
+*.hi
+*.hs
+*.ml
+*.mli
+*.o
